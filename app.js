@@ -21,6 +21,7 @@ const DISHES = [
     { id: 12, name: '新疆大盘鸡', canteen: '清真食堂', window: 'D-03', price: 22, rating: 4.7, reviews: 167, emoji: '🍗', category: '主食', tags: ['分量足', '够辣'], desc: '鸡肉入味，土豆绵软，皮带面配着吃', isNew: true, imgColor: '#C62828' },
     { id: 13, name: '韩式拌饭', canteen: '风味小吃街', window: 'C-05', price: 14, rating: 4.1, reviews: 89, emoji: '🍱', category: '盖饭', tags: ['颜值高', '营养均衡'], desc: '蔬菜丰富，辣酱开胃', isNew: false, imgColor: '#FF5252' },
     { id: 14, name: '潮汕砂锅粥', canteen: '第二食堂', window: 'B-10', price: 12, rating: 4.3, reviews: 67, emoji: '🥣', category: '小吃', tags: ['养胃', '鲜美'], desc: '米粒开花，鲜虾扇贝', isNew: true, imgColor: '#66BB6A' },
+    { id: 15, name: '老式锅包肉', canteen: '第一食堂', window: 'A-09', price: 15, rating: 3.2, reviews: 22, emoji: '🥩', category: '主食', tags: ['口味波动', '偏甜'], desc: '以前口碑不错，近期评价一般', isNew: false, imgColor: '#8D6E63' },
 ];
 
 const REVIEWS = [
@@ -32,6 +33,9 @@ const REVIEWS = [
     { id: 6, dishId: 2, user: '米饭杀手', avatar: '🐯', rating: 5, text: '汤汁拌饭绝了！鸡肉很入味，土豆也炖烂了，14块管饱', time: '2天前', daysAgo: 2, tags: ['下饭', '性价比'] },
     { id: 7, dishId: 12, user: '新疆小伙', avatar: '🐪', rating: 5, text: '新窗口的大盘鸡太惊艳了！皮带面泡在汤汁里，又筋道又入味', time: '2天前', daysAgo: 2, tags: ['新品', '分量足'] },
     { id: 8, dishId: 11, user: '匿名同学', avatar: '💣', rating: 1, text: '今天又去试了一次，还是很难吃，芝士根本不拉丝', time: '3天前', daysAgo: 3, tags: ['踩雷', '口味好'] },
+    { id: 9, dishId: 15, user: '匿名同学', avatar: '🎭', rating: 2, text: '锅包肉太甜了，外皮也不脆，跟以前比差远了', time: '10天前', daysAgo: 10, tags: ['踩雷', '偏甜'] },
+    { id: 10, dishId: 15, user: '东北老铁', avatar: '🐻', rating: 4, text: '上次吃还行，酸甜口，就是偶尔发挥不稳定', time: '12天前', daysAgo: 12, tags: ['酸甜'] },
+    { id: 11, dishId: 15, user: '匿名同学', avatar: '🎭', rating: 2, text: '面衣太厚，肉很少，咬一口全是面糊', time: '15天前', daysAgo: 15, tags: ['踩雷', '量少'] },
 ];
 
 const CATEGORIES = [
