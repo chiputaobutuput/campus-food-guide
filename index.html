@@ -243,25 +243,6 @@
             </div>
         </div>
 
-        <!-- 打卡弹窗 -->
-        <div id="checkin-modal" class="modal" style="display:none">
-            <div class="modal-overlay" onclick="closeCheckIn()"></div>
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>我去吃了（打卡）</h3>
-                    <button class="close-btn" onclick="closeCheckIn()">✕</button>
-                </div>
-                <div class="detail-body" style="text-align:center">
-                    <p style="font-size:14px;color:#666;margin-bottom:20px">记录你今天的用餐选择</p>
-                    <div style="display:flex;flex-direction:column;gap:10px">
-                        <button type="button" class="detail-btn btn-primary" onclick="confirmCheckIn(true)">🍽️ 吃了这道菜</button>
-                        <button type="button" class="detail-btn btn-outline" onclick="confirmCheckIn(false)">🔄 选了其他菜</button>
-                        <button type="button" class="detail-btn" style="background:#F5F5F5;color:#999" onclick="closeCheckIn()">取消</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- 隐私弹窗 -->
         <div id="privacy-modal" class="modal" style="display:none">
             <div class="modal-overlay" onclick="closePrivacy()"></div>
@@ -314,6 +295,6 @@
         </nav>
     </div>
 
-    <script src="app.js"></script>
+    <script src="app.js?v=2"></script>
 </body>
 </html>
