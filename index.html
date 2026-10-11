@@ -44,26 +44,6 @@
 
         <!-- 首页：核心决策区 -->
         <section id="page-home" class="page">
-            <!-- 双榜决策入口（首屏核心决策区） -->
-            <div class="section" style="padding-top:12px">
-                <div class="section-header">
-                    <h2>🏆 菜品榜单</h2>
-                    <span style="font-size:12px;color:#999">排队前，先看评</span>
-                </div>
-                <div class="dual-tab">
-                    <button class="dual-tab-btn active good" data-tab="good" onclick="switchDualTab('good', this)">👍 好评榜</button>
-                    <button class="dual-tab-btn" data-tab="bad" onclick="switchDualTab('bad', this)">⚠️ 避雷榜</button>
-                </div>
-                <div class="building-filter" id="building-filter">
-                    <span class="filter-chip active" data-canteen="all" onclick="setBuildingFilter('all')">全部</span>
-                    <span class="filter-chip" data-canteen="第一食堂" onclick="setBuildingFilter('第一食堂')">一食堂</span>
-                    <span class="filter-chip" data-canteen="第二食堂" onclick="setBuildingFilter('第二食堂')">二食堂</span>
-                    <span class="filter-chip" data-canteen="清真食堂" onclick="setBuildingFilter('清真食堂')">清真</span>
-                    <span class="filter-chip" data-canteen="风味小吃街" onclick="setBuildingFilter('风味小吃街')">风味</span>
-                </div>
-                <div class="rank-list" id="dual-rank-list"></div>
-            </div>
-
             <!-- 今日推荐轮播 -->
             <div class="banner-section">
                 <div class="banner-card" id="banner-card">
@@ -84,6 +64,26 @@
                     <h2>🏢 食堂导航</h2>
                 </div>
                 <div class="canteen-grid" id="canteen-grid"></div>
+            </div>
+
+            <!-- 双榜决策入口 -->
+            <div class="section" style="padding-top:12px">
+                <div class="section-header">
+                    <h2>🏆 菜品榜单</h2>
+                    <span style="font-size:12px;color:#999">排队前，先看评</span>
+                </div>
+                <div class="dual-tab">
+                    <button class="dual-tab-btn active good" data-tab="good" onclick="switchDualTab('good', this)">👍 好评榜</button>
+                    <button class="dual-tab-btn" data-tab="bad" onclick="switchDualTab('bad', this)">⚠️ 避雷榜</button>
+                </div>
+                <div class="building-filter" id="building-filter">
+                    <span class="filter-chip active" data-canteen="all" onclick="setBuildingFilter('all')">全部</span>
+                    <span class="filter-chip" data-canteen="第一食堂" onclick="setBuildingFilter('第一食堂')">一食堂</span>
+                    <span class="filter-chip" data-canteen="第二食堂" onclick="setBuildingFilter('第二食堂')">二食堂</span>
+                    <span class="filter-chip" data-canteen="清真食堂" onclick="setBuildingFilter('清真食堂')">清真</span>
+                    <span class="filter-chip" data-canteen="风味小吃街" onclick="setBuildingFilter('风味小吃街')">风味</span>
+                </div>
+                <div class="rank-list" id="dual-rank-list"></div>
             </div>
         </section>
 
@@ -109,17 +109,9 @@
             </div>
         </section>
 
-        <!-- 避雷页：避雷指南 + 新品上架 + 最新点评 -->
+        <!-- 最新页：新品上架 + 最新点评 -->
         <section id="page-avoid" class="page" style="display:none">
             <div class="section" style="padding-top:12px">
-                <div class="section-header">
-                    <h2>⚠️ 避雷指南</h2>
-                    <span style="font-size:12px;color:#999">评分低于3.5的菜品</span>
-                </div>
-                <div class="dish-list" id="avoid-list"></div>
-            </div>
-
-            <div class="section">
                 <div class="section-header">
                     <h2>✨ 新品上架</h2>
                 </div>
@@ -285,8 +277,8 @@
                 <span class="nav-label">发评价</span>
             </div>
             <div class="nav-item" data-page="avoid" onclick="navigateTo('avoid')">
-                <span class="nav-icon">⚠️</span>
-                <span class="nav-label">避雷</span>
+                <span class="nav-icon">🕐</span>
+                <span class="nav-label">最新</span>
             </div>
             <div class="nav-item" data-page="mine" onclick="navigateTo('mine')">
                 <span class="nav-icon">👤</span>
