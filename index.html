@@ -102,25 +102,24 @@
             </div>
         </section>
 
-        <!-- 排行榜页 -->
-        <section id="page-rank" class="page" style="display:none">
-            <div class="section" style="padding-top:12px">
-                <div class="rank-tabs">
-                    <button class="rank-tab active" onclick="switchRankTab('rating', this)">评分最高</button>
-                    <button class="rank-tab" onclick="switchRankTab('hot', this)">最受欢迎</button>
-                    <button class="rank-tab" onclick="switchRankTab('value', this)">性价比之王</button>
-                </div>
-                <div class="rank-list-full" id="rank-full-list"></div>
-            </div>
-        </section>
-
-        <!-- 发现页 -->
+        <!-- 发现页（含排行榜） -->
         <section id="page-discover" class="page" style="display:none">
             <div class="section" style="padding-top:12px">
                 <div class="section-header">
                     <h2>📂 分类浏览</h2>
                 </div>
                 <div class="category-grid" id="category-grid"></div>
+            </div>
+            <div class="section">
+                <div class="section-header">
+                    <h2>🏆 全维度排行</h2>
+                </div>
+                <div class="rank-tabs">
+                    <button class="rank-tab active" onclick="switchRankTab('rating', this)">评分最高</button>
+                    <button class="rank-tab" onclick="switchRankTab('hot', this)">最受欢迎</button>
+                    <button class="rank-tab" onclick="switchRankTab('value', this)">性价比之王</button>
+                </div>
+                <div class="rank-list-full" id="rank-full-list"></div>
             </div>
             <div class="section">
                 <div class="section-header">
@@ -247,10 +246,6 @@
             <div class="nav-item active" data-page="home" onclick="navigateTo('home')">
                 <span class="nav-icon">🏠</span>
                 <span class="nav-label">首页</span>
-            </div>
-            <div class="nav-item" data-page="rank" onclick="navigateTo('rank')">
-                <span class="nav-icon">🏆</span>
-                <span class="nav-label">排行榜</span>
             </div>
             <div class="nav-item" data-page="discover" onclick="navigateTo('discover')">
                 <span class="nav-icon">🧭</span>
