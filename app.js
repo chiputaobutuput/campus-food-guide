@@ -310,8 +310,6 @@ function init() {
 
 // ===== 导航 =====
 function navigateTo(page) {
-    // 兼容：原 discover 页已合并入首页
-    if (page === 'discover') page = 'home';
     document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
     const target = document.getElementById('page-' + page);
     if (target) {
@@ -332,16 +330,18 @@ function navigateTo(page) {
     if (page === 'mine') renderMineStats();
     if (page === 'myreviews') renderMyReviews();
     if (page === 'favorites') renderFavorites();
-    if (page === 'home') {
-        // 首页合并了原发现页内容，刷新各模块
+    if (page === 'discover') {
         renderCategoryGrid();
         const activeTab = document.querySelector('.rank-tab.active');
         if (activeTab) {
             const type = activeTab.getAttribute('onclick').match(/'(\w+)'/)[1];
             switchRankTab(type, activeTab);
         }
+    }
+    if (page === 'avoid') {
         renderAvoidList();
         renderNewDishes();
+        renderLatestReviews();
     }
     if (page === 'review') {
         renderReviewCanteenGrid();
@@ -1007,14 +1007,27 @@ function toggleFavorite(dishId) {
 }
 
 // ===== 打卡功能 =====
+let currentCheckInDishId = null;
 function openCheckIn(dishId) {
-    const choice = confirm('你今天吃了什么？\n\n点击"确定"= 吃了这道菜\n点击"取消"= 选了同食堂其他菜');
+    currentCheckInDishId = dishId;
+    document.getElementById('checkin-modal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeCheckIn() {
+    document.getElementById('checkin-modal').style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+function confirmCheckIn(ateThis) {
+    const dishId = currentCheckInDishId;
     const checkIns = JSON.parse(localStorage.getItem('zhishi_checkins') || '{}');
     const today = new Date().toDateString();
     if (!checkIns[today]) checkIns[today] = [];
-    checkIns[today].push({ dishId, ateThis: choice, time: Date.now() });
+    checkIns[today].push({ dishId, ateThis: ateThis, time: Date.now() });
     localStorage.setItem('zhishi_checkins', JSON.stringify(checkIns));
-    showToast(choice ? '打卡成功：吃了这道菜' : '打卡成功：选了其他菜');
+    closeCheckIn();
+    showToast(ateThis ? '打卡成功：吃了这道菜' : '打卡成功：选了其他菜');
 }
 
 // ===== 点评弹窗 =====
