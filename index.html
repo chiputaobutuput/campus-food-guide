@@ -42,7 +42,7 @@
             <div id="search-results" class="dish-list"></div>
         </section>
 
-        <!-- 首页 -->
+        <!-- 首页：核心决策区 -->
         <section id="page-home" class="page">
             <!-- 双榜决策入口（首屏核心决策区） -->
             <div class="section" style="padding-top:12px">
@@ -85,16 +85,17 @@
                 </div>
                 <div class="canteen-grid" id="canteen-grid"></div>
             </div>
+        </section>
 
-            <!-- 分类浏览 -->
-            <div class="section">
+        <!-- 发现页：分类浏览 + 全维度排行 -->
+        <section id="page-discover" class="page" style="display:none">
+            <div class="section" style="padding-top:12px">
                 <div class="section-header">
                     <h2>📂 分类浏览</h2>
                 </div>
                 <div class="category-grid" id="category-grid"></div>
             </div>
 
-            <!-- 全维度排行 -->
             <div class="section">
                 <div class="section-header">
                     <h2>🏆 全维度排行</h2>
@@ -106,9 +107,11 @@
                 </div>
                 <div class="rank-list-full" id="rank-full-list"></div>
             </div>
+        </section>
 
-            <!-- 避雷指南 -->
-            <div class="section">
+        <!-- 避雷页：避雷指南 + 新品上架 + 最新点评 -->
+        <section id="page-avoid" class="page" style="display:none">
+            <div class="section" style="padding-top:12px">
                 <div class="section-header">
                     <h2>⚠️ 避雷指南</h2>
                     <span style="font-size:12px;color:#999">评分低于3.5的菜品</span>
@@ -116,7 +119,6 @@
                 <div class="dish-list" id="avoid-list"></div>
             </div>
 
-            <!-- 新品上架 -->
             <div class="section">
                 <div class="section-header">
                     <h2>✨ 新品上架</h2>
@@ -124,7 +126,6 @@
                 <div class="dish-list" id="new-dish-list"></div>
             </div>
 
-            <!-- 最新评价 -->
             <div class="section">
                 <div class="section-header">
                     <h2>💬 最新点评</h2>
@@ -242,6 +243,25 @@
             </div>
         </div>
 
+        <!-- 打卡弹窗 -->
+        <div id="checkin-modal" class="modal" style="display:none">
+            <div class="modal-overlay" onclick="closeCheckIn()"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>我去吃了（打卡）</h3>
+                    <button class="close-btn" onclick="closeCheckIn()">✕</button>
+                </div>
+                <div class="detail-body" style="text-align:center">
+                    <p style="font-size:14px;color:#666;margin-bottom:20px">记录你今天的用餐选择</p>
+                    <div style="display:flex;flex-direction:column;gap:10px">
+                        <button type="button" class="detail-btn btn-primary" onclick="confirmCheckIn(true)">🍽️ 吃了这道菜</button>
+                        <button type="button" class="detail-btn btn-outline" onclick="confirmCheckIn(false)">🔄 选了其他菜</button>
+                        <button type="button" class="detail-btn" style="background:#F5F5F5;color:#999" onclick="closeCheckIn()">取消</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- 隐私弹窗 -->
         <div id="privacy-modal" class="modal" style="display:none">
             <div class="modal-overlay" onclick="closePrivacy()"></div>
@@ -267,17 +287,25 @@
         <!-- Toast提示 -->
         <div id="toast" class="toast" style="display:none"></div>
 
-        <!-- 底部导航 -->
+        <!-- 底部导航（5个Tab） -->
         <nav class="bottom-nav">
             <div class="nav-item active" data-page="home" onclick="navigateTo('home')">
                 <span class="nav-icon">🏠</span>
                 <span class="nav-label">首页</span>
+            </div>
+            <div class="nav-item" data-page="discover" onclick="navigateTo('discover')">
+                <span class="nav-icon">🔍</span>
+                <span class="nav-label">发现</span>
             </div>
             <div class="nav-item nav-item-center" data-page="review" onclick="navigateTo('review')">
                 <div class="nav-center-btn">
                     <span class="nav-center-icon">✍️</span>
                 </div>
                 <span class="nav-label">发评价</span>
+            </div>
+            <div class="nav-item" data-page="avoid" onclick="navigateTo('avoid')">
+                <span class="nav-icon">⚠️</span>
+                <span class="nav-label">避雷</span>
             </div>
             <div class="nav-item" data-page="mine" onclick="navigateTo('mine')">
                 <span class="nav-icon">👤</span>
