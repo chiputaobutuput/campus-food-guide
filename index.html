@@ -85,6 +85,44 @@
                 <div class="rank-list" id="dual-rank-list"></div>
             </div>
 
+            <!-- 分类浏览 -->
+            <div class="section">
+                <div class="section-header">
+                    <h2>📂 分类浏览</h2>
+                </div>
+                <div class="category-grid" id="category-grid"></div>
+            </div>
+
+            <!-- 全维度排行 -->
+            <div class="section">
+                <div class="section-header">
+                    <h2>🏆 全维度排行</h2>
+                </div>
+                <div class="rank-tabs">
+                    <button class="rank-tab active" onclick="switchRankTab('rating', this)">评分最高</button>
+                    <button class="rank-tab" onclick="switchRankTab('hot', this)">最受欢迎</button>
+                    <button class="rank-tab" onclick="switchRankTab('value', this)">性价比之王</button>
+                </div>
+                <div class="rank-list-full" id="rank-full-list"></div>
+            </div>
+
+            <!-- 避雷指南 -->
+            <div class="section">
+                <div class="section-header">
+                    <h2>⚠️ 避雷指南</h2>
+                    <span style="font-size:12px;color:#999">评分低于3.5的菜品</span>
+                </div>
+                <div class="dish-list" id="avoid-list"></div>
+            </div>
+
+            <!-- 新品上架 -->
+            <div class="section">
+                <div class="section-header">
+                    <h2>✨ 新品上架</h2>
+                </div>
+                <div class="dish-list" id="new-dish-list"></div>
+            </div>
+
             <!-- 最新评价 -->
             <div class="section">
                 <div class="section-header">
@@ -102,37 +140,24 @@
             </div>
         </section>
 
-        <!-- 发现页（含排行榜） -->
-        <section id="page-discover" class="page" style="display:none">
+        <!-- 发评价流程页 -->
+        <section id="page-review" class="page" style="display:none">
             <div class="section" style="padding-top:12px">
                 <div class="section-header">
-                    <h2>📂 分类浏览</h2>
+                    <h2>✍️ 发表点评</h2>
+                    <span style="font-size:12px;color:#999">选择你刚吃过的菜品</span>
                 </div>
-                <div class="category-grid" id="category-grid"></div>
-            </div>
-            <div class="section">
-                <div class="section-header">
-                    <h2>🏆 全维度排行</h2>
+                <!-- 步骤1：选食堂 -->
+                <div id="review-step-canteen">
+                    <h3 style="font-size:14px;color:#666;margin:12px 4px">第一步：选择食堂</h3>
+                    <div class="canteen-grid" id="review-canteen-grid"></div>
                 </div>
-                <div class="rank-tabs">
-                    <button class="rank-tab active" onclick="switchRankTab('rating', this)">评分最高</button>
-                    <button class="rank-tab" onclick="switchRankTab('hot', this)">最受欢迎</button>
-                    <button class="rank-tab" onclick="switchRankTab('value', this)">性价比之王</button>
+                <!-- 步骤2：选菜品 -->
+                <div id="review-step-dish" style="display:none">
+                    <button class="back-btn-inline" onclick="reviewBackToCanteen()">← 换个食堂</button>
+                    <h3 style="font-size:14px;color:#666;margin:12px 4px" id="review-dish-title">选择菜品</h3>
+                    <div class="dish-list" id="review-dish-list"></div>
                 </div>
-                <div class="rank-list-full" id="rank-full-list"></div>
-            </div>
-            <div class="section">
-                <div class="section-header">
-                    <h2>⚠️ 避雷指南</h2>
-                    <span style="font-size:12px;color:#999">评分低于3.5的菜品</span>
-                </div>
-                <div class="dish-list" id="avoid-list"></div>
-            </div>
-            <div class="section">
-                <div class="section-header">
-                    <h2>✨ 新品上架</h2>
-                </div>
-                <div class="dish-list" id="new-dish-list"></div>
             </div>
         </section>
 
@@ -247,9 +272,11 @@
                 <span class="nav-icon">🏠</span>
                 <span class="nav-label">首页</span>
             </div>
-            <div class="nav-item" data-page="discover" onclick="navigateTo('discover')">
-                <span class="nav-icon">🧭</span>
-                <span class="nav-label">发现</span>
+            <div class="nav-item nav-item-center" data-page="review" onclick="navigateTo('review')">
+                <div class="nav-center-btn">
+                    <span class="nav-center-icon">✍️</span>
+                </div>
+                <span class="nav-label">发评价</span>
             </div>
             <div class="nav-item" data-page="mine" onclick="navigateTo('mine')">
                 <span class="nav-icon">👤</span>
