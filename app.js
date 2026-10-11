@@ -25,17 +25,31 @@ const DISHES = [
 ];
 
 const REVIEWS = [
-    { id: 1, dishId: 1, user: '美食猎人', avatar: '🦊', rating: 5, text: '辣度刚好，食材很新鲜，自选模式太爽了！每次必加午餐肉和藕片', time: '2小时前', daysAgo: 0, tags: ['麻辣', '量大'] },
-    { id: 2, dishId: 4, user: '早起鸟', avatar: '🐦', rating: 5, text: '煎饼果子yyds！外皮酥脆，牛肉给得多，加个蛋简直完美，8块钱吃到撑', time: '3小时前', daysAgo: 0, tags: ['便宜', '好吃'] },
-    { id: 3, dishId: 9, user: '西北狼', avatar: '🐺', rating: 5, text: '冬天来一碗泡馍太幸福了，汤鲜味美，羊肉一点膻味都没有', time: '5小时前', daysAgo: 1, tags: ['暖胃', '正宗'] },
-    { id: 4, dishId: 3, user: '嗦粉达人', avatar: '🐱', rating: 4, text: '味道正，但酸笋可以再多放点，喜欢重口的可以让阿姨多加', time: '昨天', daysAgo: 1, tags: ['重口味'] },
-    { id: 5, dishId: 11, user: '匿名同学', avatar: '💣', rating: 2, text: '芝士就薄薄一层，还不如直接叫焗饭，性价比太低了，不推荐', time: '昨天', daysAgo: 1, tags: ['踩雷', '量少'] },
-    { id: 6, dishId: 2, user: '米饭杀手', avatar: '🐯', rating: 5, text: '汤汁拌饭绝了！鸡肉很入味，土豆也炖烂了，14块管饱', time: '2天前', daysAgo: 2, tags: ['下饭', '性价比'] },
-    { id: 7, dishId: 12, user: '新疆小伙', avatar: '🐪', rating: 5, text: '新窗口的大盘鸡太惊艳了！皮带面泡在汤汁里，又筋道又入味', time: '2天前', daysAgo: 2, tags: ['新品', '分量足'] },
-    { id: 8, dishId: 11, user: '匿名同学', avatar: '💣', rating: 1, text: '今天又去试了一次，还是很难吃，芝士根本不拉丝', time: '3天前', daysAgo: 3, tags: ['踩雷', '口味好'] },
-    { id: 9, dishId: 15, user: '匿名同学', avatar: '🎭', rating: 2, text: '锅包肉太甜了，外皮也不脆，跟以前比差远了', time: '10天前', daysAgo: 10, tags: ['踩雷', '偏甜'] },
-    { id: 10, dishId: 15, user: '东北老铁', avatar: '🐻', rating: 4, text: '上次吃还行，酸甜口，就是偶尔发挥不稳定', time: '12天前', daysAgo: 12, tags: ['酸甜'] },
-    { id: 11, dishId: 15, user: '匿名同学', avatar: '🎭', rating: 2, text: '面衣太厚，肉很少，咬一口全是面糊', time: '15天前', daysAgo: 15, tags: ['踩雷', '量少'] },
+    { id: 1, dishId: 1, user: '美食猎人', avatar: '🦊', rating: 5, text: '辣度刚好，食材很新鲜，自选模式太爽了！每次必加午餐肉和藕片', time: '2小时前', daysAgo: 0, tags: ['麻辣', '量大'], likes: 18 },
+    { id: 2, dishId: 4, user: '早起鸟', avatar: '🐦', rating: 5, text: '煎饼果子yyds！外皮酥脆，牛肉给得多，加个蛋简直完美，8块钱吃到撑', time: '3小时前', daysAgo: 0, tags: ['便宜', '好吃'], likes: 24 },
+    { id: 3, dishId: 9, user: '西北狼', avatar: '🐺', rating: 5, text: '冬天来一碗泡馍太幸福了，汤鲜味美，羊肉一点膻味都没有', time: '5小时前', daysAgo: 1, tags: ['暖胃', '正宗'], likes: 15 },
+    { id: 4, dishId: 3, user: '嗦粉达人', avatar: '🐱', rating: 4, text: '味道正，但酸笋可以再多放点，喜欢重口的可以让阿姨多加', time: '昨天', daysAgo: 1, tags: ['重口味'], likes: 9 },
+    { id: 5, dishId: 11, user: '匿名同学', avatar: '💣', rating: 2, text: '芝士就薄薄一层，还不如直接叫焗饭，性价比太低了，不推荐', time: '昨天', daysAgo: 1, tags: ['踩雷', '量少'], likes: 7 },
+    { id: 6, dishId: 2, user: '米饭杀手', avatar: '🐯', rating: 5, text: '汤汁拌饭绝了！鸡肉很入味，土豆也炖烂了，14块管饱', time: '2天前', daysAgo: 2, tags: ['下饭', '性价比'], likes: 21 },
+    { id: 7, dishId: 12, user: '新疆小伙', avatar: '🐪', rating: 5, text: '新窗口的大盘鸡太惊艳了！皮带面泡在汤汁里，又筋道又入味', time: '2天前', daysAgo: 2, tags: ['新品', '分量足'], likes: 16 },
+    { id: 8, dishId: 11, user: '匿名同学', avatar: '💣', rating: 1, text: '今天又去试了一次，还是很难吃，芝士根本不拉丝', time: '3天前', daysAgo: 3, tags: ['踩雷', '口味差'], likes: 12 },
+    { id: 9, dishId: 15, user: '匿名同学', avatar: '🎭', rating: 2, text: '锅包肉太甜了，外皮也不脆，跟以前比差远了', time: '10天前', daysAgo: 10, tags: ['踩雷', '偏甜'], likes: 5 },
+    { id: 10, dishId: 15, user: '东北老铁', avatar: '🐻', rating: 4, text: '上次吃还行，酸甜口，就是偶尔发挥不稳定', time: '12天前', daysAgo: 12, tags: ['酸甜'], likes: 6 },
+    { id: 11, dishId: 15, user: '匿名同学', avatar: '🎭', rating: 2, text: '面衣太厚，肉很少，咬一口全是面糊', time: '15天前', daysAgo: 15, tags: ['踩雷', '量少'], likes: 4 },
+    // 补充评价，使热门菜品近7天评价数≥3（满足好评榜门槛）
+    { id: 12, dishId: 1, user: '无辣不欢', avatar: '🌶️', rating: 5, text: '麻辣香锅永远的神，食材新鲜分量足，强烈推荐给爱吃辣的同学', time: '4小时前', daysAgo: 0, tags: ['麻辣', '量大'], likes: 11 },
+    { id: 13, dishId: 1, user: '吃货小王', avatar: '🐼', rating: 5, text: '自选模式很自由，丸子和蔬菜都很新鲜，辣度可调很贴心', time: '1天前', daysAgo: 1, tags: ['口味好'], likes: 8 },
+    { id: 14, dishId: 4, user: '早餐达人', avatar: '🥐', rating: 5, text: '每天早上必吃的煎饼，外酥里嫩，牛肉给得很实在，性价比超高', time: '6小时前', daysAgo: 0, tags: ['便宜', '性价比高'], likes: 13 },
+    { id: 15, dishId: 4, user: '夜猫子', avatar: '🦉', rating: 4, text: '味道不错就是排队有点久，建议早点去，加蛋加肠更满足', time: '1天前', daysAgo: 1, tags: ['排队久'], likes: 5 },
+    { id: 16, dishId: 2, user: '干饭人', avatar: '🍚', rating: 5, text: '黄焖鸡米饭太下饭了，汤汁浓郁，鸡肉嫩，土豆软，强烈推荐', time: '3天前', daysAgo: 3, tags: ['下饭', '口味好'], likes: 9 },
+    { id: 17, dishId: 2, user: '柠檬茶', avatar: '🍋', rating: 4, text: '整体不错，就是偶尔鸡肉有点柴，但汤汁拌饭真的绝了', time: '4天前', daysAgo: 4, tags: ['下饭'], likes: 4 },
+    { id: 18, dishId: 9, user: '回民街常客', avatar: '🕌', rating: 5, text: '泡馍很正宗，汤浓肉烂，糖蒜配上绝了，冬天吃一碗全身暖', time: '3天前', daysAgo: 3, tags: ['暖胃', '正宗'], likes: 7 },
+    { id: 19, dishId: 9, user: '面食爱好者', avatar: '🍜', rating: 5, text: '羊肉给得足，没有膻味，汤头浓郁，分量大到吃不完', time: '4天前', daysAgo: 4, tags: ['份量足'], likes: 6 },
+    { id: 20, dishId: 12, user: '大盘鸡爱好者', avatar: '🍗', rating: 5, text: '新品大盘鸡太惊艳，鸡肉入味土豆绵软，皮带面吸满汤汁，必点', time: '3天前', daysAgo: 3, tags: ['新品', '够辣'], likes: 10 },
+    { id: 21, dishId: 12, user: '辣妹子', avatar: '🌶️', rating: 4, text: '味道很正，分量足，就是有点辣不能吃辣的同学慎点', time: '4天前', daysAgo: 4, tags: ['够辣'], likes: 3 },
+    { id: 22, dishId: 6, user: '酸菜鱼控', avatar: '🐟', rating: 5, text: '酸菜鱼粉太鲜美了，鱼片滑嫩，酸菜爽脆，汤都能喝完', time: '2天前', daysAgo: 2, tags: ['鲜美', '开胃'], likes: 8 },
+    { id: 23, dishId: 6, user: '粉面达人', avatar: '🍜', rating: 4, text: '鱼片新鲜，汤底好喝，就是分量稍少，男生可能不够吃', time: '3天前', daysAgo: 3, tags: ['鲜美'], likes: 4 },
+    { id: 24, dishId: 6, user: '美食评论家', avatar: '📝', rating: 5, text: '性价比很高的一碗粉，酸菜很正宗，值得推荐', time: '5天前', daysAgo: 5, tags: ['性价比高'], likes: 5 },
 ];
 
 const CATEGORIES = [
@@ -49,8 +63,18 @@ const CATEGORIES = [
     { name: '更多', icon: '✨', color: '#F1F8E9' },
 ];
 
-// 标签池（发评价用）
-const REVIEW_TAG_OPTIONS = ['踩雷', '排队久', '出餐慢', '份量足', '口味好', '性价比高', '回购N次', '新品试吃'];
+// 标签池（按星级分正负向，发评价用）
+const REVIEW_TAG_POOLS = {
+    positive: ['口味好', '份量足', '性价比高', '回购N次', '招牌', '下饭神器', '新品试吃', '暖胃'],
+    negative: ['踩雷', '排队久', '出餐慢', '量少', '口味差', '价格贵', '不推荐', '偏甜'],
+    neutral: ['一般', '还行', '中规中矩', '口味波动', '中规中矩']
+};
+
+function getTagPoolByRating(rating) {
+    if (rating >= 4) return { pool: REVIEW_TAG_POOLS.positive, type: 'positive' };
+    if (rating <= 2) return { pool: REVIEW_TAG_POOLS.negative, type: 'negative' };
+    return { pool: REVIEW_TAG_POOLS.neutral, type: 'neutral' };
+}
 
 // 敏感词库（模拟内容安全）
 const SENSITIVE_WORDS = ['傻逼', '草泥马', '去死', '垃圾人', '废物', '脑残'];
@@ -61,7 +85,8 @@ const STORAGE_KEYS = {
     DISHES: 'zhishi_dishes',
     FAVORITES: 'zhishi_favorites',
     REVIEW_COUNT_TODAY: 'zhishi_review_count_today',
-    REVIEW_COUNT_DATE: 'zhishi_review_count_date'
+    REVIEW_COUNT_DATE: 'zhishi_review_count_date',
+    LIKES: 'zhishi_likes'
 };
 
 function loadUserReviews() {
@@ -94,6 +119,71 @@ function saveFavorites(favs) {
     localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(favs));
 }
 
+// ===== 点赞 =====
+function loadLikedReviews() {
+    try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEYS.LIKES) || '[]');
+    } catch { return []; }
+}
+
+function saveLikedReviews(ids) {
+    localStorage.setItem(STORAGE_KEYS.LIKES, JSON.stringify(ids));
+}
+
+function getReviewLikeCount(review) {
+    return review.likes || 0;
+}
+
+function hasLikedReview(reviewId) {
+    return loadLikedReviews().includes(reviewId);
+}
+
+function isOwnReview(review) {
+    return review.user === '我';
+}
+
+// ===== 图片前端压缩（≤300KB，限1张）=====
+function compressImage(file, maxSizeKB = 300) {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                let canvas = document.createElement('canvas');
+                let ctx = canvas.getContext('2d');
+                let width = img.width;
+                let height = img.height;
+                // 限制最大边长 1280
+                const maxDim = 1280;
+                if (width > maxDim || height > maxDim) {
+                    if (width > height) {
+                        height = Math.round(height * maxDim / width);
+                        width = maxDim;
+                    } else {
+                        width = Math.round(width * maxDim / height);
+                        height = maxDim;
+                    }
+                }
+                canvas.width = width;
+                canvas.height = height;
+                ctx.drawImage(img, 0, 0, width, height);
+                // 逐步降低质量直到 ≤ maxSizeKB
+                let quality = 0.8;
+                let result = canvas.toDataURL('image/jpeg', quality);
+                while (result.length > maxSizeKB * 1024 && quality > 0.2) {
+                    quality -= 0.1;
+                    result = canvas.toDataURL('image/jpeg', quality);
+                }
+                resolve(result);
+            };
+            img.onerror = () => resolve(e.target.result);
+            img.src = e.target.result;
+        };
+        reader.onerror = () => resolve(null);
+        reader.readAsDataURL(file);
+    });
+}
+
 // 获取合并后的菜品数据（基础数据 + 用户评分覆盖）
 function getMergedDishes() {
     const overrides = loadDishOverrides();
@@ -111,7 +201,8 @@ function getAllReviews() {
 
 // ===== 推荐度标签算法（V1基于评分，V2升级为"值得排队"）=====
 function getWorthTag(dish) {
-    if (dish.reviews < 10) {
+    const recentCount = getAllReviews().filter(r => r.dishId === dish.id && (r.daysAgo || 0) <= 7).length;
+    if (recentCount < 3) {
         return { type: 'none', label: '评价不足', icon: '⚪' };
     }
     if (dish.rating >= 4.5) {
@@ -123,20 +214,21 @@ function getWorthTag(dish) {
     return { type: 'maybe', label: '可以一试', icon: '🟡' };
 }
 
-// 算法透明化文案
+// 算法透明化文案（近7天口径）
 function getAlgoTransparentText(dish) {
     const worth = getWorthTag(dish);
+    const recentCount = getAllReviews().filter(r => r.dishId === dish.id && (r.daysAgo || 0) <= 7).length;
     if (worth.type === 'none') {
-        return `评价不足10条（当前${dish.reviews}条），暂不判定`;
+        return `近7天仅 ${recentCount} 条评价（不足3条），暂不判定推荐度`;
     }
-    return `近30天 ${dish.reviews} 条评价，均分 ${dish.rating} → ${worth.label}`;
+    return `近7天 ${recentCount} 条评价，均分 ${dish.rating} → ${worth.label}`;
 }
 
 // ===== 排队状态提示（V1基于评价标签）=====
 function getQueueStatus(dish) {
     const allReviews = getAllReviews().filter(r => r.dishId === dish.id);
     const recent = allReviews.filter(r => (r.daysAgo || 0) <= 7);
-    if (recent.length < 5) return null;
+    if (recent.length < 3) return null;
     const queueCount = recent.filter(r => (r.tags || []).some(t => t.includes('排队'))).length;
     const slowCount = recent.filter(r => (r.tags || []).some(t => t.includes('出餐') || t.includes('慢'))).length;
     if (queueCount / recent.length >= 0.3) return { type: 'queue', text: '⏳ 近期排队较久' };
@@ -210,6 +302,9 @@ function init() {
     renderAvoidList();
     renderNewDishes();
     renderMineStats();
+    // 初始化全维度排行（默认评分最高）
+    const firstRankTab = document.querySelector('.rank-tab');
+    if (firstRankTab) switchRankTab('rating', firstRankTab);
     startBannerAutoPlay();
 }
 
@@ -366,9 +461,11 @@ function reviewBackToCanteen() {
 }
 
 // 食堂详情页
+let currentCanteenTab = 'all';
 function openCanteenDetail(canteenId) {
     const canteen = CANTEENS.find(c => c.id === canteenId);
     const dishes = getMergedDishes().filter(d => d.canteen === canteen.name);
+    currentCanteenTab = 'all';
 
     document.getElementById('canteen-detail-content').innerHTML = `
         <div class="canteen-detail-header">
@@ -387,17 +484,41 @@ function openCanteenDetail(canteenId) {
                 ${canteen.tags.map(t => `<span>${t}</span>`).join('')}
             </div>
         </div>
-        <div class="section-header">
-            <h3>🍽️ 全部菜品（按评分排序）</h3>
+        <div class="canteen-tabs">
+            <button class="canteen-tab active" data-ctab="all" onclick="switchCanteenTab('all', this)">全部菜品</button>
+            <button class="canteen-tab" data-ctab="avoid" onclick="switchCanteenTab('avoid', this)">避雷库</button>
+            <button class="canteen-tab" data-ctab="new" onclick="switchCanteenTab('new', this)">新品</button>
         </div>
-        ${dishes.length > 0 ? `
-            <div class="dish-list">
-                ${dishes.sort((a, b) => b.rating - a.rating).map(d => renderDishCard(d)).join('')}
-            </div>
-        ` : '<div class="empty-state"><div class="empty-icon">🍽️</div><p>该食堂暂无菜品数据</p></div>'}
+        <div id="canteen-dish-list"></div>
     `;
-
+    renderCanteenDishes(canteen.name);
     navigateTo('canteen');
+}
+
+function switchCanteenTab(tab, el) {
+    document.querySelectorAll('.canteen-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    currentCanteenTab = tab;
+    const canteenName = document.querySelector('.canteen-detail-header h2').textContent;
+    renderCanteenDishes(canteenName);
+}
+
+function renderCanteenDishes(canteenName) {
+    let dishes = getMergedDishes().filter(d => d.canteen === canteenName);
+    if (currentCanteenTab === 'avoid') {
+        dishes = dishes.filter(d => d.rating < 3.5 && d.reviews >= 5);
+    } else if (currentCanteenTab === 'new') {
+        dishes = dishes.filter(d => d.isNew);
+    } else {
+        dishes = dishes.sort((a, b) => b.rating - a.rating);
+    }
+    const container = document.getElementById('canteen-dish-list');
+    if (!container) return;
+    if (dishes.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-icon">🍽️</div><p>该分类下暂无菜品</p></div>';
+        return;
+    }
+    container.innerHTML = `<div class="dish-list">${dishes.map(d => renderDishCard(d)).join('')}</div>`;
 }
 
 // 菜品卡片通用渲染
@@ -452,20 +573,23 @@ function renderDualRank(type) {
     let doubtfulList = [];
 
     if (type === 'good') {
-        // 好评榜：评分≥4.5 且评价数≥10
-        list = filtered.filter(d => d.rating >= 4.5 && d.reviews >= 10)
-                     .sort((a, b) => b.rating - a.rating)
-                     .slice(0, 5);
-    } else {
-        // 差评榜：评分<3.5 且评价数≥10 且近7天有差评
+        // 好评榜：评分≥4.5 且近7天评价数≥3
         list = filtered.filter(d => {
-            if (d.rating >= 3.5 || d.reviews < 10) return false;
+            if (d.rating < 4.5) return false;
+            const recentCount = getAllReviews().filter(r => r.dishId === d.id && (r.daysAgo || 0) <= 7).length;
+            return recentCount >= 3;
+        }).sort((a, b) => b.rating - a.rating)
+          .slice(0, 10);
+    } else {
+        // 差评榜：评分<3.5 且近7天有差评（时效性预警）
+        list = filtered.filter(d => {
+            if (d.rating >= 3.5) return false;
             const recentBad = getAllReviews().filter(r => r.dishId === d.id && r.rating <= 2 && (r.daysAgo || 0) <= 7);
             return recentBad.length > 0;
         }).sort((a, b) => a.rating - b.rating).slice(0, 5);
-        // 存疑区：评分<3.5 且评价数≥10 但近7天无差评
+        // 存疑区：评分<3.5 但近7天无差评
         doubtfulList = filtered.filter(d => {
-            if (d.rating >= 3.5 || d.reviews < 10) return false;
+            if (d.rating >= 3.5) return false;
             const recentBad = getAllReviews().filter(r => r.dishId === d.id && r.rating <= 2 && (r.daysAgo || 0) <= 7);
             return recentBad.length === 0;
         }).sort((a, b) => a.rating - b.rating).slice(0, 5);
@@ -547,6 +671,14 @@ function setBuildingFilter(canteen) {
     currentBuildingFilter = canteen;
     const activeTab = document.querySelector('.dual-tab-btn.active');
     renderDualRank(activeTab ? activeTab.dataset.tab : 'good');
+    // 同步刷新受楼栋筛选影响的模块
+    const activeRankTab = document.querySelector('.rank-tab.active');
+    if (activeRankTab) {
+        const type = activeRankTab.getAttribute('onclick').match(/'(\w+)'/)[1];
+        switchRankTab(type, activeRankTab);
+    }
+    renderAvoidList();
+    renderNewDishes();
 }
 
 // ===== 排行榜全量 =====
@@ -555,13 +687,16 @@ function switchRankTab(type, el) {
     el.classList.add('active');
 
     const dishes = getMergedDishes();
+    // 楼栋筛选全局应用
+    const filtered = currentBuildingFilter === 'all' ? dishes : dishes.filter(d => d.canteen === currentBuildingFilter);
     let sorted;
     if (type === 'rating') {
-        sorted = [...dishes].sort((a, b) => b.rating - a.rating);
+        sorted = [...filtered].sort((a, b) => b.rating - a.rating);
     } else if (type === 'hot') {
-        sorted = [...dishes].sort((a, b) => b.reviews - a.reviews);
+        sorted = [...filtered].sort((a, b) => b.reviews - a.reviews);
     } else if (type === 'value') {
-        sorted = [...dishes].sort((a, b) => (b.rating / b.price) - (a.rating / a.price));
+        // 性价比：排除 price=0 的菜品，按 rating/price 降序
+        sorted = [...filtered].filter(d => d.price > 0).sort((a, b) => (b.rating / b.price) - (a.rating / a.price));
     }
 
     const container = document.getElementById('rank-full-list');
@@ -595,18 +730,33 @@ function renderLatestReviews() {
     const dishes = getMergedDishes();
     container.innerHTML = allReviews.map(r => {
         const dish = dishes.find(d => d.id === r.dishId);
+        const isBad = r.rating <= 2;
+        const displayName = isBad ? '匿名同学' : r.user;
+        const displayAvatar = isBad ? '🎭' : r.avatar;
+        const liked = hasLikedReview(r.id);
+        const own = isOwnReview(r);
+        const likeCount = getReviewLikeCount(r);
+        // 差评不展示点赞数，仅用于排序权重
+        const likeDisplay = isBad ? '' : `${likeCount}`;
+        const likeBtn = own
+            ? `<button class="review-like disabled" title="不能给自己的评价点赞">♡ ${likeDisplay}</button>`
+            : `<button class="review-like ${liked ? 'liked' : ''}" onclick="event.stopPropagation(); toggleLike(${r.id})">${liked ? '♥' : '♡'} ${likeDisplay}</button>`;
         return `
             <div class="review-card" onclick="openDishDetail(${r.dishId})">
                 <div class="review-header">
-                    <div class="review-avatar">${r.avatar}</div>
+                    <div class="review-avatar">${displayAvatar}</div>
                     <div class="review-user">
-                        <h5>${r.user}</h5>
+                        <h5>${displayName}${r.isFirst ? ' <span class="first-review-badge">首评</span>' : ''}</h5>
                         <p>${r.time}</p>
                     </div>
                 </div>
                 <div class="review-stars">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</div>
                 <p class="review-text">${r.text}</p>
                 <span class="review-dish">${dish ? dish.emoji + ' ' + dish.name : '已下架'}</span>
+                <div class="review-footer">
+                    <span></span>
+                    ${likeBtn}
+                </div>
             </div>
         `;
     }).join('');
@@ -632,14 +782,20 @@ function searchByCategory(cat) {
 
 // ===== 避雷指南 =====
 function renderAvoidList() {
-    const dishes = getMergedDishes().filter(d => d.rating < 3.5);
+    const dishes = getMergedDishes();
     const filtered = currentBuildingFilter === 'all' ? dishes : dishes.filter(d => d.canteen === currentBuildingFilter);
+    // 避雷库：评分<3.5 且评价数≥5，且排除差评榜（近7天有差评）已展示菜品
+    const avoidDishes = filtered.filter(d => {
+        if (d.rating >= 3.5 || d.reviews < 5) return false;
+        const recentBad = getAllReviews().filter(r => r.dishId === d.id && r.rating <= 2 && (r.daysAgo || 0) <= 7);
+        return recentBad.length === 0; // 不在差评榜中
+    }).slice(0, 5);
     const container = document.getElementById('avoid-list');
-    if (filtered.length === 0) {
-        container.innerHTML = '<div class="empty-state"><div class="empty-icon">🎉</div><p>该食堂暂无踩雷菜品</p></div>';
+    if (avoidDishes.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-icon">🎉</div><p>暂无避雷菜品</p></div>';
         return;
     }
-    container.innerHTML = filtered.map(d => renderDishCard(d)).join('');
+    container.innerHTML = avoidDishes.map(d => renderDishCard(d)).join('');
 }
 
 // ===== 新品上架 =====
@@ -674,6 +830,8 @@ function handleSearch(keyword) {
         return;
     }
 
+    // 排序：评分降序，相同评分按评价数降序
+    results.sort((a, b) => b.rating - a.rating || b.reviews - a.reviews);
     container.innerHTML = results.map(d => renderDishCard(d)).join('');
 }
 
@@ -701,6 +859,13 @@ function openDishDetail(id) {
             const displayName = isBad ? '匿名同学' : r.user;
             const displayAvatar = isBad ? '🎭' : r.avatar;
             const displayTime = r.time;
+            const liked = hasLikedReview(r.id);
+            const own = isOwnReview(r);
+            const likeCount = getReviewLikeCount(r);
+            const likeDisplay = isBad ? '' : `${likeCount}`;
+            const likeBtn = own
+                ? `<button class="review-like disabled" title="不能给自己的评价点赞">♡ ${likeDisplay}</button>`
+                : `<button class="review-like ${liked ? 'liked' : ''}" onclick="event.stopPropagation(); toggleLike(${r.id}); openDishDetail(${id})">${liked ? '♥' : '♡'} ${likeDisplay}</button>`;
             const imagesHtml = r.images && r.images.length > 0
                 ? `<div class="review-images">${r.images.map(img => `<img src="${img}" alt="评价图">`).join('')}</div>`
                 : '';
@@ -709,7 +874,7 @@ function openDishDetail(id) {
                     <div class="review-header">
                         <div class="review-avatar">${displayAvatar}</div>
                         <div class="review-user">
-                            <h5>${displayName}${r.isFirst ? ' 🏆首评' : ''}</h5>
+                            <h5>${displayName}${r.isFirst ? ' <span class="first-review-badge">首评</span>' : ''}</h5>
                             <p>${displayTime}</p>
                         </div>
                     </div>
@@ -717,6 +882,10 @@ function openDishDetail(id) {
                     <p class="review-text">${r.text}</p>
                     ${imagesHtml}
                     ${r.tags && r.tags.length > 0 ? `<div style="margin-top:6px">${r.tags.map(t => `<span class="detail-tag" style="margin-right:4px">#${t}</span>`).join('')}</div>` : ''}
+                    <div class="review-footer">
+                        <span></span>
+                        ${likeBtn}
+                    </div>
                 </div>
             `;
         }).join('')
@@ -734,7 +903,7 @@ function openDishDetail(id) {
             <div class="detail-meta">
                 <span class="rating-big">★ ${dish.rating}</span>
                 <span style="color:#999">${dish.reviews}条评价</span>
-                <span class="price-big">¥${dish.price}</span>
+                <span class="price-big">¥${dish.price}<span class="price-report" onclick="event.stopPropagation(); reportPrice(${dish.id})">价格不准？</span></span>
             </div>
             <div class="detail-tags">
                 <span class="worth-tag ${worth.type}">${worth.icon} ${worth.label}</span>
@@ -772,6 +941,53 @@ function openDishDetail(id) {
 function closeDishDetail() {
     document.getElementById('dish-detail-modal').style.display = 'none';
     document.body.style.overflow = '';
+}
+
+// ===== 点赞（每人每评仅1次，不可给自己点赞）=====
+function toggleLike(reviewId) {
+    const allReviews = getAllReviews();
+    const review = allReviews.find(r => r.id === reviewId);
+    if (!review) return;
+    if (isOwnReview(review)) {
+        showToast('不能给自己的评价点赞');
+        return;
+    }
+    const liked = loadLikedReviews();
+    const idx = liked.indexOf(reviewId);
+    if (idx >= 0) {
+        liked.splice(idx, 1);
+        // 减少点赞数
+        if (review.likes) review.likes -= 1;
+    } else {
+        liked.push(reviewId);
+        review.likes = (review.likes || 0) + 1;
+    }
+    saveLikedReviews(liked);
+    // 持久化点赞数变更（仅用户评价写入localStorage，种子评价仅内存更新）
+    const userReviews = loadUserReviews();
+    const uIdx = userReviews.findIndex(r => r.id === reviewId);
+    if (uIdx >= 0) {
+        userReviews[uIdx].likes = review.likes;
+        saveUserReviews(userReviews);
+    }
+    renderLatestReviews();
+}
+
+// ===== 价格上报 =====
+function reportPrice(dishId) {
+    const newPrice = prompt('请输入你看到的实际价格（元）：');
+    if (newPrice === null) return;
+    const price = parseFloat(newPrice);
+    if (isNaN(price) || price < 0) {
+        showToast('请输入有效价格');
+        return;
+    }
+    const overrides = loadDishOverrides();
+    const current = overrides[dishId] || {};
+    overrides[dishId] = { ...current, price: price };
+    saveDishOverrides(overrides);
+    showToast('价格已上报，感谢反馈！');
+    openDishDetail(dishId);
 }
 
 // ===== 想吃清单 =====
@@ -823,22 +1039,22 @@ function openReviewModal(dishId) {
             <div class="rating-selector" id="rating-selector">
                 ${[1,2,3,4,5].map(n => `<span class="rating-star" data-rating="${n}" onclick="selectRating(${n})">★</span>`).join('')}
             </div>
-            <label class="form-label">选择标签 <span style="color:#999;font-weight:400;font-size:12px">（必选至少1个，最多3个）</span></label>
-            <div class="tag-selector" id="tag-selector">
-                ${REVIEW_TAG_OPTIONS.map(t => `<span class="tag" onclick="toggleTag(this, '${t}')">${t}</span>`).join('')}
-            </div>
-            <label class="form-label">一句话评价 <span style="color:#999;font-weight:400;font-size:12px">（选填，≤200字）</span></label>
-            <textarea class="form-textarea" id="review-text" placeholder="说说你的用餐体验..." maxlength="200"></textarea>
-            <label class="form-label">上传图片 <span style="color:#999;font-weight:400;font-size:12px">（选填，最多3张）</span></label>
+            <label class="form-label">选择标签 <span style="color:#999;font-weight:400;font-size:12px">（根据星级动态展示，选填，最多3个）</span></label>
+            <div class="tag-selector" id="tag-selector"></div>
+            <label class="form-label">评价内容 <span style="color:#999;font-weight:400;font-size:12px">（至少15字，≤200字）</span></label>
+            <textarea class="form-textarea" id="review-text" placeholder="说说你的用餐体验，至少15个字..." maxlength="200"></textarea>
+            <label class="form-label">上传图片 <span style="color:#999;font-weight:400;font-size:12px">（选填，限1张，自动压缩）</span></label>
             <div class="review-image-upload" id="review-image-upload">
-                <label class="image-add-btn" onclick="document.getElementById('review-image-input').click()">+</label>
-                <input type="file" id="review-image-input" accept="image/*" multiple style="display:none" onchange="handleReviewImages(event)">
+                <label class="image-add-btn" id="image-add-label" onclick="document.getElementById('review-image-input').click()">+</label>
+                <input type="file" id="review-image-input" accept="image/*" style="display:none" onchange="handleReviewImages(event)">
                 <div class="image-preview-list" id="image-preview-list"></div>
             </div>
             <button class="submit-btn" onclick="submitReview()">发布点评</button>
             <p style="font-size:11px;color:#BBB;text-align:center;margin-top:10px">今日已评价 ${getTodayReviewCount()}/5 条</p>
         </div>
     `;
+    // 初始渲染空标签池（未打分时不展示）
+    renderTagSelector(0);
 
     closeDishDetail();
     document.getElementById('review-modal').style.display = 'flex';
@@ -855,6 +1071,24 @@ function selectRating(n) {
         const val = parseInt(star.dataset.rating);
         star.classList.toggle('active', val <= n);
     });
+    // 根据星级动态切换标签池，清空已选标签
+    selectedTags = [];
+    renderTagSelector(n);
+}
+
+// 根据星级渲染对应正负向标签池
+function renderTagSelector(rating) {
+    const container = document.getElementById('tag-selector');
+    if (!container) return;
+    if (rating === 0) {
+        container.innerHTML = '<span style="color:#BBB;font-size:13px">请先打分，再选择标签</span>';
+        return;
+    }
+    const { pool, type } = getTagPoolByRating(rating);
+    container.innerHTML = pool.map(t => {
+        const selected = selectedTags.includes(t);
+        return `<span class="tag ${type} ${selected ? 'selected' : ''}" onclick="toggleTag(this, '${t}')">${t}</span>`;
+    }).join('');
 }
 
 function toggleTag(el, tag) {
@@ -872,18 +1106,22 @@ function toggleTag(el, tag) {
 }
 
 function handleReviewImages(event) {
-    const files = Array.from(event.target.files);
-    const remaining = 3 - reviewImages.length;
-    if (files.length > remaining) {
-        showToast(`最多上传3张图片`);
+    const file = event.target.files[0];
+    if (!file) return;
+    if (reviewImages.length >= 1) {
+        showToast('最多上传1张图片');
+        return;
     }
-    files.slice(0, remaining).forEach(file => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            reviewImages.push(e.target.result);
+    compressImage(file, 300).then(compressed => {
+        if (compressed) {
+            reviewImages = [compressed];
             renderImagePreviews();
-        };
-        reader.readAsDataURL(file);
+            // 隐藏上传按钮
+            const addLabel = document.getElementById('image-add-label');
+            if (addLabel) addLabel.style.display = 'none';
+        } else {
+            showToast('图片处理失败');
+        }
     });
     event.target.value = '';
 }
@@ -902,6 +1140,8 @@ function renderImagePreviews() {
 function removeReviewImage(index) {
     reviewImages.splice(index, 1);
     renderImagePreviews();
+    const addLabel = document.getElementById('image-add-label');
+    if (addLabel) addLabel.style.display = 'flex';
 }
 
 function submitReview() {
@@ -909,15 +1149,17 @@ function submitReview() {
         showToast('请先打分');
         return;
     }
-    if (selectedTags.length === 0) {
-        showToast('请至少选择1个标签');
-        return;
-    }
 
     const text = document.getElementById('review-text').value.trim();
 
+    // 提交门槛：至少15字（标签/图片为有效评价加分项，非提交必填）
+    if (text.length < 15) {
+        showToast('评价内容至少15个字');
+        return;
+    }
+
     // 敏感词过滤
-    if (text && containsSensitiveWord(text)) {
+    if (containsSensitiveWord(text)) {
         showToast('评价包含敏感词，请修改后提交');
         return;
     }
@@ -932,11 +1174,12 @@ function submitReview() {
         user: '我',
         avatar: '😊',
         rating: selectedRating,
-        text: text || selectedTags.join('、'),
+        text: text,
         time: '刚刚',
         daysAgo: 0,
         tags: selectedTags,
         images: reviewImages,
+        likes: 0,
         isFirst: isFirst
     };
 
@@ -993,22 +1236,38 @@ function renderMyReviews() {
 
     container.innerHTML = userReviews.map(r => {
         const dish = dishes.find(d => d.id === r.dishId);
+        const isBad = r.rating <= 2;
+        const displayName = isBad ? '匿名同学' : r.user;
+        const displayAvatar = isBad ? '🎭' : r.avatar;
         return `
-            <div class="review-card" onclick="openDishDetail(${r.dishId})">
+            <div class="review-card">
                 <div class="review-header">
-                    <div class="review-avatar">${r.avatar}</div>
+                    <div class="review-avatar">${displayAvatar}</div>
                     <div class="review-user">
-                        <h5>${r.user}${r.isFirst ? ' 🏆' : ''}</h5>
+                        <h5>${displayName}${r.isFirst ? ' <span class="first-review-badge">首评</span>' : ''}</h5>
                         <p>${r.time}</p>
                     </div>
+                    <button class="review-delete-btn" onclick="deleteReview(${r.id})">删除</button>
                 </div>
                 <div class="review-stars">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</div>
                 <p class="review-text">${r.text}</p>
+                ${r.images && r.images.length > 0 ? `<div class="review-images">${r.images.map(img => `<img src="${img}" alt="评价图">`).join('')}</div>` : ''}
                 ${r.tags && r.tags.length > 0 ? `<div style="margin-top:6px">${r.tags.map(t => `<span class="detail-tag" style="margin-right:4px">#${t}</span>`).join('')}</div>` : ''}
                 <span class="review-dish">${dish ? dish.emoji + ' ' + dish.name : '已下架'}</span>
             </div>
         `;
     }).join('');
+}
+
+// 删除我的评价（二次确认）
+function deleteReview(reviewId) {
+    if (!confirm('确定要删除这条评价吗？删除后不可恢复。')) return;
+    let userReviews = loadUserReviews();
+    userReviews = userReviews.filter(r => r.id !== reviewId);
+    saveUserReviews(userReviews);
+    renderMyReviews();
+    renderMineStats();
+    showToast('评价已删除');
 }
 
 function renderFavorites() {
