@@ -3,12 +3,259 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="description" content="校园食堂避雷决策助手 - 依据具体窗口的菜品体验与证据，帮助学生决定是否购买。">
-    <title>校园食堂避雷决策助手</title>
+    <title>知食分子 - 校园食堂点评推荐</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div id="app"></div>
+    <div id="app">
+        <!-- 顶部导航栏 -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="logo">
+                    <span class="logo-icon">🍚</span>
+                    <span class="logo-text">知食分子</span>
+                </div>
+                <div class="header-actions">
+                    <button class="search-btn" onclick="navigateTo('search')">🔍</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- 搜索页面 -->
+        <section id="page-search" class="page" style="display:none">
+            <div class="search-bar-wrap">
+                <input type="text" id="search-input" placeholder="搜索菜品、窗口..." oninput="handleSearch(this.value)">
+                <button class="back-btn" onclick="navigateTo('home')">取消</button>
+            </div>
+            <div class="search-suggestions">
+                <h3>热门搜索</h3>
+                <div class="tag-list">
+                    <span class="tag" onclick="quickSearch('麻辣烫')">麻辣烫</span>
+                    <span class="tag" onclick="quickSearch('黄焖鸡')">黄焖鸡</span>
+                    <span class="tag" onclick="quickSearch('螺蛳粉')">螺蛳粉</span>
+                    <span class="tag" onclick="quickSearch('盖浇饭')">盖浇饭</span>
+                    <span class="tag" onclick="quickSearch('煎饼')">煎饼</span>
+                </div>
+            </div>
+            <div id="search-results" class="dish-list"></div>
+        </section>
+
+        <!-- 首页 -->
+        <section id="page-home" class="page">
+            <!-- 今日推荐轮播 -->
+            <div class="banner-section">
+                <div class="banner-card" id="banner-card">
+                    <div class="banner-image"></div>
+                    <div class="banner-info">
+                        <span class="banner-badge">🔥 今日推荐</span>
+                        <h2 class="banner-title" id="banner-title">加载中...</h2>
+                        <p class="banner-desc" id="banner-desc"></p>
+                        <div class="banner-rating" id="banner-rating"></div>
+                    </div>
+                </div>
+                <div class="banner-dots" id="banner-dots"></div>
+            </div>
+
+            <!-- 食堂入口 -->
+            <div class="section">
+                <div class="section-header">
+                    <h2>🏢 食堂导航</h2>
+                </div>
+                <div class="canteen-grid" id="canteen-grid"></div>
+            </div>
+
+            <!-- 双榜决策入口 -->
+            <div class="section">
+                <div class="section-header">
+                    <h2>🏆 菜品榜单</h2>
+                </div>
+                <div class="dual-tab">
+                    <button class="dual-tab-btn active" data-tab="good" onclick="switchDualTab('good', this)">👍 好评榜</button>
+                    <button class="dual-tab-btn" data-tab="bad" onclick="switchDualTab('bad', this)">⚠️ 避雷榜</button>
+                </div>
+                <div class="rank-list" id="dual-rank-list"></div>
+            </div>
+
+            <!-- 最新评价 -->
+            <div class="section">
+                <div class="section-header">
+                    <h2>💬 最新点评</h2>
+                </div>
+                <div class="review-list" id="latest-reviews"></div>
+            </div>
+        </section>
+
+        <!-- 食堂详情页 -->
+        <section id="page-canteen" class="page" style="display:none">
+            <div class="section" style="padding-top:12px">
+                <button class="back-btn-inline" onclick="navigateTo('home')">← 返回</button>
+                <div id="canteen-detail-content"></div>
+            </div>
+        </section>
+
+        <!-- 排行榜页 -->
+        <section id="page-rank" class="page" style="display:none">
+            <div class="section" style="padding-top:12px">
+                <div class="rank-tabs">
+                    <button class="rank-tab active" onclick="switchRankTab('rating', this)">评分最高</button>
+                    <button class="rank-tab" onclick="switchRankTab('hot', this)">最受欢迎</button>
+                    <button class="rank-tab" onclick="switchRankTab('value', this)">性价比之王</button>
+                </div>
+                <div class="rank-list-full" id="rank-full-list"></div>
+            </div>
+        </section>
+
+        <!-- 发现页 -->
+        <section id="page-discover" class="page" style="display:none">
+            <div class="section" style="padding-top:12px">
+                <div class="section-header">
+                    <h2>📂 分类浏览</h2>
+                </div>
+                <div class="category-grid" id="category-grid"></div>
+            </div>
+            <div class="section">
+                <div class="section-header">
+                    <h2>⚠️ 避雷指南</h2>
+                    <span style="font-size:12px;color:#999">评分低于3.5的菜品</span>
+                </div>
+                <div class="dish-list" id="avoid-list"></div>
+            </div>
+            <div class="section">
+                <div class="section-header">
+                    <h2>✨ 新品上架</h2>
+                </div>
+                <div class="dish-list" id="new-dish-list"></div>
+            </div>
+        </section>
+
+        <!-- 我的页面 -->
+        <section id="page-mine" class="page" style="display:none">
+            <div class="profile-card">
+                <div class="avatar">😊</div>
+                <div class="profile-info">
+                    <h3>知食探索者</h3>
+                    <p id="profile-stats">已点评 0 道 · 收藏 0 道</p>
+                </div>
+            </div>
+            <div class="mine-menu">
+                <div class="menu-item" onclick="navigateTo('myreviews')">
+                    <span>📋 我的点评</span>
+                    <span class="menu-count" id="my-review-count">0</span>
+                    <span>›</span>
+                </div>
+                <div class="menu-item" onclick="navigateTo('favorites')">
+                    <span>⭐ 我的收藏</span>
+                    <span class="menu-count" id="my-fav-count">0</span>
+                    <span>›</span>
+                </div>
+                <div class="menu-item" onclick="showToast('功能开发中')">
+                    <span>📜 浏览历史</span>
+                    <span>›</span>
+                </div>
+                <div class="menu-item" onclick="showToast('功能开发中')">
+                    <span>⚙️ 设置</span>
+                    <span>›</span>
+                </div>
+                <div class="menu-item" onclick="showPrivacy()">
+                    <span>ℹ️ 关于知食分子</span>
+                    <span>›</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 我的点评页 -->
+        <section id="page-myreviews" class="page" style="display:none">
+            <div class="section" style="padding-top:12px">
+                <button class="back-btn-inline" onclick="navigateTo('mine')">← 返回</button>
+                <div class="section-header" style="margin-top:12px">
+                    <h2>📋 我的点评</h2>
+                </div>
+                <div id="my-reviews-list" class="review-list"></div>
+            </div>
+        </section>
+
+        <!-- 收藏页 -->
+        <section id="page-favorites" class="page" style="display:none">
+            <div class="section" style="padding-top:12px">
+                <button class="back-btn-inline" onclick="navigateTo('mine')">← 返回</button>
+                <div class="section-header" style="margin-top:12px">
+                    <h2>⭐ 我的收藏</h2>
+                </div>
+                <div id="favorites-list" class="dish-list"></div>
+            </div>
+        </section>
+
+        <!-- 菜品详情弹窗 -->
+        <div id="dish-detail-modal" class="modal" style="display:none">
+            <div class="modal-overlay" onclick="closeDishDetail()"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button class="close-btn" onclick="closeDishDetail()">✕</button>
+                </div>
+                <div id="dish-detail-content"></div>
+            </div>
+        </div>
+
+        <!-- 点评弹窗 -->
+        <div id="review-modal" class="modal" style="display:none">
+            <div class="modal-overlay" onclick="closeReviewModal()"></div>
+            <div class="modal-content review-modal-content">
+                <div class="modal-header">
+                    <h3>发表点评</h3>
+                    <button class="close-btn" onclick="closeReviewModal()">✕</button>
+                </div>
+                <div id="review-form"></div>
+            </div>
+        </div>
+
+        <!-- 隐私弹窗 -->
+        <div id="privacy-modal" class="modal" style="display:none">
+            <div class="modal-overlay" onclick="closePrivacy()"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>关于知食分子</h3>
+                    <button class="close-btn" onclick="closePrivacy()">✕</button>
+                </div>
+                <div class="detail-body">
+                    <h4 style="font-size:16px;margin-bottom:8px">产品定位</h4>
+                    <p style="font-size:14px;color:#666;line-height:1.6;margin-bottom:16px">校园食堂版"点评"——以真实学生评价为核心，帮你在排队前就知道值不值。评价粒度细到菜品级。</p>
+                    <h4 style="font-size:16px;margin-bottom:8px">隐私声明</h4>
+                    <p style="font-size:14px;color:#666;line-height:1.6;margin-bottom:8px">• 校园身份仅用于评价资格校验，不做他用</p>
+                    <p style="font-size:14px;color:#666;line-height:1.6;margin-bottom:8px">• 评价展示采用匿名化昵称</p>
+                    <p style="font-size:14px;color:#666;line-height:1.6;margin-bottom:8px">• 不收集、不存储个人消费记录</p>
+                    <p style="font-size:14px;color:#666;line-height:1.6;margin-bottom:16px">• 差评内容不展示真实昵称，保护评价者</p>
+                    <h4 style="font-size:16px;margin-bottom:8px">建设性避雷原则</h4>
+                    <p style="font-size:14px;color:#666;line-height:1.6">每条避雷展示附建议性描述，只呈现可行动信息，不做纯负面曝光。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast提示 -->
+        <div id="toast" class="toast" style="display:none"></div>
+
+        <!-- 底部导航 -->
+        <nav class="bottom-nav">
+            <div class="nav-item active" data-page="home" onclick="navigateTo('home')">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-label">首页</span>
+            </div>
+            <div class="nav-item" data-page="rank" onclick="navigateTo('rank')">
+                <span class="nav-icon">🏆</span>
+                <span class="nav-label">排行榜</span>
+            </div>
+            <div class="nav-item" data-page="discover" onclick="navigateTo('discover')">
+                <span class="nav-icon">🧭</span>
+                <span class="nav-label">发现</span>
+            </div>
+            <div class="nav-item" data-page="mine" onclick="navigateTo('mine')">
+                <span class="nav-icon">👤</span>
+                <span class="nav-label">我的</span>
+            </div>
+        </nav>
+    </div>
+
     <script src="app.js"></script>
 </body>
 </html>
