@@ -924,9 +924,6 @@ function openDishDetail(id) {
                 <button class="detail-btn ${isFav ? 'btn-primary' : 'btn-outline'}" onclick="toggleFavorite(${dish.id})">${isFav ? '✓ 已加入' : '🍽️ 加入想吃清单'}</button>
                 <button class="detail-btn btn-primary" onclick="openReviewModal(${dish.id})">✍️ 写点评</button>
             </div>
-            <div style="margin-top:10px">
-                <button class="detail-btn btn-outline" style="width:100%" onclick="openCheckIn(${dish.id})">✅ 我去吃了（打卡）</button>
-            </div>
             <div class="detail-reviews">
                 <h4>💬 用户评价 (${dishReviews.length})</h4>
                 ${reviewHTML}
@@ -1004,30 +1001,6 @@ function toggleFavorite(dishId) {
     saveFavorites(favs);
     openDishDetail(dishId); // 刷新详情页按钮状态
     renderMineStats();
-}
-
-// ===== 打卡功能 =====
-let currentCheckInDishId = null;
-function openCheckIn(dishId) {
-    currentCheckInDishId = dishId;
-    document.getElementById('checkin-modal').style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-}
-
-function closeCheckIn() {
-    document.getElementById('checkin-modal').style.display = 'none';
-    document.body.style.overflow = '';
-}
-
-function confirmCheckIn(ateThis) {
-    const dishId = currentCheckInDishId;
-    const checkIns = JSON.parse(localStorage.getItem('zhishi_checkins') || '{}');
-    const today = new Date().toDateString();
-    if (!checkIns[today]) checkIns[today] = [];
-    checkIns[today].push({ dishId, ateThis: ateThis, time: Date.now() });
-    localStorage.setItem('zhishi_checkins', JSON.stringify(checkIns));
-    closeCheckIn();
-    showToast(ateThis ? '打卡成功：吃了这道菜' : '打卡成功：选了其他菜');
 }
 
 // ===== 点评弹窗 =====
