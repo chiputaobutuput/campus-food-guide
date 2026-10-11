@@ -299,7 +299,6 @@ function init() {
     renderDualRank('good');
     renderLatestReviews();
     renderCategoryGrid();
-    renderAvoidList();
     renderNewDishes();
     renderMineStats();
     // 初始化全维度排行（默认评分最高）
@@ -339,7 +338,6 @@ function navigateTo(page) {
         }
     }
     if (page === 'avoid') {
-        renderAvoidList();
         renderNewDishes();
         renderLatestReviews();
     }
@@ -677,7 +675,6 @@ function setBuildingFilter(canteen) {
         const type = activeRankTab.getAttribute('onclick').match(/'(\w+)'/)[1];
         switchRankTab(type, activeRankTab);
     }
-    renderAvoidList();
     renderNewDishes();
 }
 
@@ -778,24 +775,6 @@ function searchByCategory(cat) {
     const input = document.getElementById('search-input');
     input.value = cat;
     handleSearch(cat);
-}
-
-// ===== 避雷指南 =====
-function renderAvoidList() {
-    const dishes = getMergedDishes();
-    const filtered = currentBuildingFilter === 'all' ? dishes : dishes.filter(d => d.canteen === currentBuildingFilter);
-    // 避雷库：评分<3.5 且评价数≥5，且排除差评榜（近7天有差评）已展示菜品
-    const avoidDishes = filtered.filter(d => {
-        if (d.rating >= 3.5 || d.reviews < 5) return false;
-        const recentBad = getAllReviews().filter(r => r.dishId === d.id && r.rating <= 2 && (r.daysAgo || 0) <= 7);
-        return recentBad.length === 0; // 不在差评榜中
-    }).slice(0, 5);
-    const container = document.getElementById('avoid-list');
-    if (avoidDishes.length === 0) {
-        container.innerHTML = '<div class="empty-state"><div class="empty-icon">🎉</div><p>暂无避雷菜品</p></div>';
-        return;
-    }
-    container.innerHTML = avoidDishes.map(d => renderDishCard(d)).join('');
 }
 
 // ===== 新品上架 =====
@@ -1193,7 +1172,6 @@ function submitReview() {
     // 刷新所有列表
     renderDualRank(document.querySelector('.dual-tab-btn.active').dataset.tab);
     renderLatestReviews();
-    renderAvoidList();
     renderNewDishes();
     renderMineStats();
 
