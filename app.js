@@ -1,730 +1,838 @@
-/* 校园食堂避雷决策助手 — 可运行原型
- * 依据 01~10 冻结文档实现：P01 查询 / P02 详情 / P03 评价
- * 数据持久化：localStorage（演示数据明确标注 source_type='demo'）
- */
-'use strict';
-
-/* ===================== 1. 字典与常量 ===================== */
-const ATTRS = {
-  saltiness: { label: '咸淡', values: ['偏淡', '适中', '偏咸'] },
-  spiciness: { label: '辣度', values: ['不辣', '微辣', '中辣', '很辣'] },
-  oiliness:  { label: '油腻感', values: ['清爽', '适中', '偏油'] },
-  portion:   { label: '分量', values: ['偏少', '适中', '偏多'] }
-};
-
-const ISSUE_TAGS = [
-  '味道偏咸', '偏油', '辣度过高', '味道偏淡',
-  '总体分量偏少', '肉量偏少', '配菜偏少', '口感偏硬', '饭菜偏干'
+// ===== 模拟数据 =====
+const CANTEENS = [
+    { id: 1, name: '第一食堂', icon: '🏢', rating: 4.2, tags: ['种类丰富', '性价比高'], location: '东区一楼' },
+    { id: 2, name: '第二食堂', icon: '🏬', rating: 4.0, tags: ['环境好', '排队少'], location: '东区二楼' },
+    { id: 3, name: '清真食堂', icon: '🕌', rating: 4.5, tags: ['特色风味', '分量足'], location: '西区一楼' },
+    { id: 4, name: '风味小吃街', icon: '🍢', rating: 3.8, tags: ['种类多', '价格偏高'], location: '南门侧' },
 ];
 
-const SALE_STATUS = {
-  on_sale: { label: '资料显示在售', cls: 'status-on' },
-  pending: { label: '资料待确认', cls: 'status-pending' },
-  stopped: { label: '已停售(历史资料)', cls: 'status-stopped' }
-};
-
-const SOURCE_LABEL = { demo: '演示数据', user: '用户贡献' };
-
-function sampleLevel(n) {
-  if (n <= 0) return { level: 0, text: '暂无反馈', cls: 'lv-0' };
-  if (n <= 4) return { level: 1, text: '个体反馈', cls: 'lv-1' };
-  if (n <= 9) return { level: 2, text: '初步观察', cls: 'lv-2' };
-  return { level: 3, text: '可描述分布(非代表性)', cls: 'lv-3' };
-}
-
-function timeWindow(dateStr) {
-  if (!dateStr) return { text: '体验日期未知', cls: 'tw-unknown' };
-  const d = new Date(dateStr);
-  if (isNaN(d)) return { text: '体验日期未知', cls: 'tw-unknown' };
-  const days = Math.floor((Date.now() - d.getTime()) / 86400000);
-  if (days <= 30) return { text: '近30天内体验', cls: 'tw-recent' };
-  if (days <= 90) return { text: '31~90天前体验', cls: 'tw-mid' };
-  return { text: '90天前体验', cls: 'tw-old' };
-}
-
-function fmtDate(s) {
-  if (!s) return '未知';
-  const d = new Date(s);
-  return isNaN(d) ? '未知' : d.toISOString().slice(0, 10);
-}
-function fmtDateTime(s) {
-  if (!s) return '';
-  const d = new Date(s);
-  return isNaN(d) ? '' : d.toISOString().slice(0, 16).replace('T', ' ');
-}
-
-/* ===================== 2. 演示数据 ===================== */
-const DEMO_DISHES = [
-  { dish_id: 'd_001', name: '黄焖鸡米饭', canteen: '第一食堂', stall: 'A窗口',
-    sale_status: 'on_sale', reference_price: 14, price_source: '窗口标价',
-    price_confirmed_at: '2026-09-15', source_type: 'demo' },
-  { dish_id: 'd_002', name: '黄焖鸡米饭', canteen: '第二食堂', stall: 'B窗口',
-    sale_status: 'on_sale', reference_price: 13, price_source: '窗口标价',
-    price_confirmed_at: '2026-09-10', source_type: 'demo' },
-  { dish_id: 'd_003', name: '麻辣香锅', canteen: '第一食堂', stall: 'C窗口',
-    sale_status: 'on_sale', reference_price: 16, price_source: '窗口标价',
-    price_confirmed_at: '2026-09-18', source_type: 'demo' },
-  { dish_id: 'd_004', name: '重庆小面', canteen: '第二食堂', stall: 'D窗口',
-    sale_status: 'on_sale', reference_price: 9, price_source: '窗口标价',
-    price_confirmed_at: '2026-09-12', source_type: 'demo' },
-  { dish_id: 'd_005', name: '牛肉煎饼果子', canteen: '风味小吃街', stall: 'E窗口',
-    sale_status: 'on_sale', reference_price: 8, price_source: '窗口标价',
-    price_confirmed_at: '2026-09-05', source_type: 'demo' },
-  { dish_id: 'd_006', name: '芝士焗饭', canteen: '第一食堂', stall: 'F窗口',
-    sale_status: 'pending', reference_price: 18, price_source: '同学提供',
-    price_confirmed_at: '2026-08-20', source_type: 'demo' },
-  { dish_id: 'd_007', name: '新疆大盘鸡', canteen: '清真食堂', stall: 'G窗口',
-    sale_status: 'stopped', reference_price: 20, price_source: '历史记录',
-    price_confirmed_at: '2026-06-01', source_type: 'demo' }
+const DISHES = [
+    { id: 1, name: '麻辣香锅', canteen: '第一食堂', window: 'A-01', price: 16, rating: 4.8, reviews: 234, emoji: '🍲', category: '主食', tags: ['招牌', '人气爆棚'], desc: '麻辣鲜香，食材自选，辣度可调', isNew: false, imgColor: '#FF6B35' },
+    { id: 2, name: '黄焖鸡米饭', canteen: '第一食堂', window: 'A-03', price: 14, rating: 4.6, reviews: 189, emoji: '🍗', category: '盖饭', tags: ['经典', '下饭神器'], desc: '鸡肉嫩滑，汤汁浓郁，配米饭绝配', isNew: false, imgColor: '#FFA500' },
+    { id: 3, name: '螺蛳粉', canteen: '第二食堂', window: 'B-02', price: 13, rating: 4.3, reviews: 156, emoji: '🍜', category: '粉面', tags: ['爱恨分明', '重口味'], desc: '正宗柳州味，酸笋腐竹配齐', isNew: false, imgColor: '#8BC344' },
+    { id: 4, name: '牛肉煎饼果子', canteen: '风味小吃街', window: 'C-01', price: 8, rating: 4.7, reviews: 312, emoji: '🥞', category: '小吃', tags: ['早餐之王', '性价比之王'], desc: '外酥里嫩，牛肉鲜香，每日限量', isNew: false, imgColor: '#FFD700' },
+    { id: 5, name: '番茄鸡蛋盖饭', canteen: '第一食堂', window: 'A-05', price: 10, rating: 3.9, reviews: 98, emoji: '🍳', category: '盖饭', tags: ['清淡', '家常味'], desc: '酸甜可口，鸡蛋嫩滑', isNew: false, imgColor: '#FF7043' },
+    { id: 6, name: '酸菜鱼粉', canteen: '第二食堂', window: 'B-04', price: 15, rating: 4.5, reviews: 142, emoji: '🐟', category: '粉面', tags: ['鲜美', '开胃'], desc: '酸菜爽脆，鱼片滑嫩', isNew: false, imgColor: '#26A69A' },
+    { id: 7, name: '鸡公煲', canteen: '第一食堂', window: 'A-07', price: 18, rating: 4.4, reviews: 120, emoji: '🍲', category: '主食', tags: ['量大', '够味'], desc: '鸡肉紧实，土豆软糯，配菜丰富', isNew: false, imgColor: '#E53935' },
+    { id: 8, name: '寿司拼盘', canteen: '风味小吃街', window: 'C-03', price: 20, rating: 3.5, reviews: 45, emoji: '🍣', category: '小吃', tags: ['价格偏高', '量少'], desc: '种类多但分量偏少', isNew: false, imgColor: '#7E57C2' },
+    { id: 9, name: '羊肉泡馍', canteen: '清真食堂', window: 'D-01', price: 17, rating: 4.6, reviews: 178, emoji: '🥘', category: '主食', tags: ['特色', '暖胃'], desc: '汤浓味鲜，羊肉软烂无膻味', isNew: false, imgColor: '#FF8C00' },
+    { id: 10, name: '重庆小面', canteen: '第二食堂', window: 'B-06', price: 9, rating: 4.2, reviews: 203, emoji: '🍝', category: '粉面', tags: ['便宜', '麻辣'], desc: '麻辣鲜香，面条筋道', isNew: false, imgColor: '#D32F2F' },
+    { id: 11, name: '芝士焗饭', canteen: '第二食堂', window: 'B-08', price: 16, rating: 2.8, reviews: 34, emoji: '🍚', category: '盖饭', tags: ['踩雷', '芝士少'], desc: '芝士量少且口感一般', isNew: false, imgColor: '#FFCA28' },
+    { id: 12, name: '新疆大盘鸡', canteen: '清真食堂', window: 'D-03', price: 22, rating: 4.7, reviews: 167, emoji: '🍗', category: '主食', tags: ['分量足', '够辣'], desc: '鸡肉入味，土豆绵软，皮带面配着吃', isNew: true, imgColor: '#C62828' },
+    { id: 13, name: '韩式拌饭', canteen: '风味小吃街', window: 'C-05', price: 14, rating: 4.1, reviews: 89, emoji: '🍱', category: '盖饭', tags: ['颜值高', '营养均衡'], desc: '蔬菜丰富，辣酱开胃', isNew: false, imgColor: '#FF5252' },
+    { id: 14, name: '潮汕砂锅粥', canteen: '第二食堂', window: 'B-10', price: 12, rating: 4.3, reviews: 67, emoji: '🥣', category: '小吃', tags: ['养胃', '鲜美'], desc: '米粒开花，鲜虾扇贝', isNew: true, imgColor: '#66BB6A' },
 ];
 
-// 辅助：生成相对日期
-function daysAgo(n) {
-  const d = new Date();
-  d.setDate(d.getDate() - n);
-  return d.toISOString();
-}
-
-const DEMO_REVIEWS = [
-  // 黄焖鸡 d_001 (第一食堂A窗) — 6条有效
-  { review_id: 'r_001', dish_id: 'd_001', reviewer_id: 'demo_u1', status: 'active',
-    saltiness: '偏咸', spiciness: '微辣', oiliness: '偏油', portion: '适中',
-    issue_tags: ['味道偏咸', '偏油'], text: '鸡肉入味但偏咸偏油，配饭刚好。',
-    images: [], source_type: 'demo',
-    created_at: daysAgo(12), edited_at: null, experience_at: daysAgo(13).slice(0,10), recorded_at: daysAgo(12).slice(0,10) },
-  { review_id: 'r_002', dish_id: 'd_001', reviewer_id: 'demo_u2', status: 'active',
-    saltiness: '适中', spiciness: '不辣', oiliness: '适中', portion: '偏少',
-    issue_tags: ['总体分量偏少'], text: '味道还行，就是分量偏少，男生吃不饱。',
-    images: [], source_type: 'demo',
-    created_at: daysAgo(8), edited_at: null, experience_at: daysAgo(9).slice(0,10), recorded_at: daysAgo(8).slice(0,10) },
-  { review_id: 'r_003', dish_id: 'd_001', reviewer_id: 'demo_u3', status: 'active',
-    saltiness: '偏咸', spiciness: null, oiliness: null, portion: '适中',
-    issue_tags: ['味道偏咸'], text: '',
-    images: [], source_type: 'demo',
-    created_at: daysAgo(5), edited_at: null, experience_at: daysAgo(6).slice(0,10), recorded_at: daysAgo(5).slice(0,10) },
-  { review_id: 'r_004', dish_id: 'd_001', reviewer_id: 'demo_u4', status: 'active',
-    saltiness: '适中', spiciness: '中辣', oiliness: '适中', portion: '适中',
-    issue_tags: [], text: '中辣口味，下饭。',
-    images: [], source_type: 'demo',
-    created_at: daysAgo(3), edited_at: null, experience_at: daysAgo(4).slice(0,10), recorded_at: daysAgo(3).slice(0,10) },
-  { review_id: 'r_005', dish_id: 'd_001', reviewer_id: 'demo_u5', status: 'active',
-    saltiness: '偏咸', spiciness: null, oiliness: '偏油', portion: '偏少',
-    issue_tags: ['味道偏咸', '总体分量偏少'], text: '又咸又油，量还少。',
-    images: [], source_type: 'demo',
-    created_at: daysAgo(2), edited_at: null, experience_at: daysAgo(3).slice(0,10), recorded_at: daysAgo(2).slice(0,10) },
-  { review_id: 'r_006', dish_id: 'd_001', reviewer_id: 'demo_u6', status: 'withdrawn',
-    saltiness: '适中', spiciness: null, oiliness: null, portion: '适中',
-    issue_tags: [], text: '已撤回',
-    images: [], source_type: 'demo',
-    created_at: daysAgo(20), edited_at: null, experience_at: daysAgo(21).slice(0,10), recorded_at: daysAgo(20).slice(0,10) },
-
-  // 黄焖鸡 d_002 (第二食堂B窗) — 同名不同窗口，数据独立
-  { review_id: 'r_010', dish_id: 'd_002', reviewer_id: 'demo_u7', status: 'active',
-    saltiness: '适中', spiciness: '微辣', oiliness: '适中', portion: '偏多',
-    issue_tags: [], text: '分量足，味道家常。',
-    images: [], source_type: 'demo',
-    created_at: daysAgo(6), edited_at: null, experience_at: daysAgo(7).slice(0,10), recorded_at: daysAgo(6).slice(0,10) },
-  { review_id: 'r_011', dish_id: 'd_002', reviewer_id: 'demo_u8', status: 'active',
-    saltiness: '偏淡', spiciness: '不辣', oiliness: '清爽', portion: '适中',
-    issue_tags: ['味道偏淡'], text: '偏淡，适合口味轻的同学。',
-    images: [], source_type: 'demo',
-    created_at: daysAgo(1), edited_at: null, experience_at: daysAgo(2).slice(0,10), recorded_at: daysAgo(1).slice(0,10) },
-
-  // 麻辣香锅 d_003
-  { review_id: 'r_020', dish_id: 'd_003', reviewer_id: 'demo_u9', status: 'active',
-    saltiness: '偏咸', spiciness: '很辣', oiliness: '偏油', portion: '适中',
-    issue_tags: ['味道偏咸', '辣度过高', '偏油'], text: '很辣很咸，不能吃辣慎选。',
-    images: [], source_type: 'demo',
-    created_at: daysAgo(10), edited_at: null, experience_at: daysAgo(11).slice(0,10), recorded_at: daysAgo(10).slice(0,10) },
-  { review_id: 'r_021', dish_id: 'd_003', reviewer_id: 'demo_u10', status: 'active',
-    saltiness: '适中', spiciness: '中辣', oiliness: '适中', portion: '偏少',
-    issue_tags: ['总体分量偏少'], text: '味道可，量少。',
-    images: [], source_type: 'demo',
-    created_at: daysAgo(4), edited_at: null, experience_at: daysAgo(5).slice(0,10), recorded_at: daysAgo(4).slice(0,10) },
-
-  // 重庆小面 d_004 — 低样本(2条)
-  { review_id: 'r_030', dish_id: 'd_004', reviewer_id: 'demo_u11', status: 'active',
-    saltiness: '偏咸', spiciness: '中辣', oiliness: null, portion: null,
-    issue_tags: ['味道偏咸'], text: '',
-    images: [], source_type: 'demo',
-    created_at: daysAgo(15), edited_at: null, experience_at: daysAgo(16).slice(0,10), recorded_at: daysAgo(15).slice(0,10) },
-  { review_id: 'r_031', dish_id: 'd_004', reviewer_id: 'demo_u12', status: 'active',
-    saltiness: '偏咸', spiciness: '微辣', oiliness: null, portion: null,
-    issue_tags: ['味道偏咸'], text: '略咸。',
-    images: [], source_type: 'demo',
-    created_at: daysAgo(2), edited_at: null, experience_at: daysAgo(3).slice(0,10), recorded_at: daysAgo(2).slice(0,10) },
-
-  // 牛肉煎饼 d_005 — 无评价
-  // 芝士焗饭 d_006 — 待确认，无评价
-  // 新疆大盘鸡 d_007 — 已停售
+const REVIEWS = [
+    { id: 1, dishId: 1, user: '美食猎人', avatar: '🦊', rating: 5, text: '辣度刚好，食材很新鲜，自选模式太爽了！每次必加午餐肉和藕片', time: '2小时前', tags: ['麻辣', '量大'] },
+    { id: 2, dishId: 4, user: '早起鸟', avatar: '🐦', rating: 5, text: '煎饼果子yyds！外皮酥脆，牛肉给得多，加个蛋简直完美，8块钱吃到撑', time: '3小时前', tags: ['便宜', '好吃'] },
+    { id: 3, dishId: 9, user: '西北狼', avatar: '🐺', rating: 5, text: '冬天来一碗泡馍太幸福了，汤鲜味美，羊肉一点膻味都没有', time: '5小时前', tags: ['暖胃', '正宗'] },
+    { id: 4, dishId: 3, user: '嗦粉达人', avatar: '🐱', rating: 4, text: '味道正，但酸笋可以再多放点，喜欢重口的可以让阿姨多加', time: '昨天', tags: ['重口味'] },
+    { id: 5, dishId: 11, user: '匿名同学', avatar: '💣', rating: 2, text: '芝士就薄薄一层，还不如直接叫焗饭，性价比太低了，不推荐', time: '昨天', tags: ['踩雷', '量少'] },
+    { id: 6, dishId: 2, user: '米饭杀手', avatar: '🐯', rating: 5, text: '汤汁拌饭绝了！鸡肉很入味，土豆也炖烂了，14块管饱', time: '2天前', tags: ['下饭', '性价比'] },
+    { id: 7, dishId: 12, user: '新疆小伙', avatar: '🐪', rating: 5, text: '新窗口的大盘鸡太惊艳了！皮带面泡在汤汁里，又筋道又入味', time: '2天前', tags: ['新品', '分量足'] },
 ];
 
-/* ===================== 3. 存储层 ===================== */
-const K = {
-  dishes: 'cfg_dishes', reviews: 'cfg_reviews',
-  reviewer: 'cfg_reviewer_id', reports: 'cfg_reports',
-  seeded: 'cfg_seeded_v1'
+const CATEGORIES = [
+    { name: '主食', icon: '🍚', color: '#FFF3E0' },
+    { name: '盖饭', icon: '🍱', color: '#E8F5E9' },
+    { name: '粉面', icon: '🍜', color: '#E3F2FD' },
+    { name: '小吃', icon: '🍢', color: '#FCE4EC' },
+    { name: '粥品', icon: '🥣', color: '#F3E5F5' },
+    { name: '甜点', icon: '🍰', color: '#FFF8E1' },
+    { name: '饮品', icon: '🥤', color: '#E0F7FA' },
+    { name: '更多', icon: '✨', color: '#F1F8E9' },
+];
+
+// 标签池（发评价用）
+const REVIEW_TAG_OPTIONS = ['踩雷', '排队久', '出餐慢', '份量足', '口味好', '性价比高', '回购N次', '新品试吃'];
+
+// 敏感词库（模拟内容安全）
+const SENSITIVE_WORDS = ['傻逼', '草泥马', '去死', '垃圾人', '废物', '脑残'];
+
+// ===== localStorage 持久化 =====
+const STORAGE_KEYS = {
+    REVIEWS: 'zhishi_reviews',
+    DISHES: 'zhishi_dishes',
+    FAVORITES: 'zhishi_favorites',
+    REVIEW_COUNT_TODAY: 'zhishi_review_count_today',
+    REVIEW_COUNT_DATE: 'zhishi_review_count_date'
 };
 
-function loadJSON(key, fallback) {
-  try {
-    const v = localStorage.getItem(key);
-    return v ? JSON.parse(v) : fallback;
-  } catch { return fallback; }
-}
-function saveJSON(key, val) {
-  localStorage.setItem(key, JSON.stringify(val));
+function loadUserReviews() {
+    try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEYS.REVIEWS) || '[]');
+    } catch { return []; }
 }
 
-function seedIfNeeded() {
-  if (!localStorage.getItem(K.seeded)) {
-    saveJSON(K.dishes, JSON.parse(JSON.stringify(DEMO_DISHES)));
-    saveJSON(K.reviews, JSON.parse(JSON.stringify(DEMO_REVIEWS)));
-    saveJSON(K.reports, []);
-    if (!localStorage.getItem(K.reviewer)) {
-      localStorage.setItem(K.reviewer, 'user_local_' + Math.random().toString(36).slice(2, 8));
-    }
-    localStorage.setItem(K.seeded, '1');
-  }
+function saveUserReviews(reviews) {
+    localStorage.setItem(STORAGE_KEYS.REVIEWS, JSON.stringify(reviews));
 }
 
-function getDishes() { return loadJSON(K.dishes, []); }
-function getReviews() { return loadJSON(K.reviews, []); }
-function getReports() { return loadJSON(K.reports, []); }
-function saveReviews(r) { saveJSON(K.reviews, r); }
-function saveReports(r) { saveJSON(K.reports, r); }
-function currentReviewer() {
-  let id = localStorage.getItem(K.reviewer);
-  if (!id) { id = 'user_local_' + Math.random().toString(36).slice(2, 8); localStorage.setItem(K.reviewer, id); }
-  return id;
+function loadDishOverrides() {
+    try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEYS.DISHES) || '{}');
+    } catch { return {}; }
 }
 
-/* ===================== 4. 业务统计逻辑 ===================== */
-// 当前有效评价集合 E(dish)
-function activeReviews(dishId) {
-  return getReviews().filter(r => r.dish_id === dishId && r.status === 'active');
+function saveDishOverrides(overrides) {
+    localStorage.setItem(STORAGE_KEYS.DISHES, JSON.stringify(overrides));
 }
 
-function stats(dishId) {
-  const revs = activeReviews(dishId);
-  const N = revs.length;
-  const N_d = {};
-  Object.keys(ATTRS).forEach(k => { N_d[k] = revs.filter(r => r[k] !== null && r[k] !== undefined).length; });
-  const n_r = {};
-  ISSUE_TAGS.forEach(t => { n_r[t] = revs.filter(r => (r.issue_tags || []).includes(t)).length; });
-  // 每个属性的取值分布
-  const dist = {};
-  Object.keys(ATTRS).forEach(k => {
-    dist[k] = {};
-    ATTRS[k].values.forEach(v => { dist[k][v] = revs.filter(r => r[k] === v).length; });
-  });
-  return { N, N_d, n_r, dist, reviews: revs };
+function loadFavorites() {
+    try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEYS.FAVORITES) || '[]');
+    } catch { return []; }
 }
 
-function dishById(id) { return getDishes().find(d => d.dish_id === id) || null; }
-
-/* ===================== 5. 查询 ===================== */
-function searchDishes(kw) {
-  const q = (kw || '').trim();
-  const dishes = getDishes();
-  if (!q) return { type: 'empty', list: [] };
-  const list = dishes.filter(d => d.name.includes(q) || d.stall.includes(q) || d.canteen.includes(q));
-  return { type: list.length ? 'results' : 'no_result', list };
+function saveFavorites(favs) {
+    localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(favs));
 }
 
-/* ===================== 6. 推荐 ===================== */
-function recommend(excludeDishId, constraints) {
-  // constraints: { canteen: string|null, maxPrice: number|null }
-  const dishes = getDishes().filter(d => {
-    if (d.dish_id === excludeDishId) return false;
-    if (d.sale_status !== 'on_sale') return false; // 停售/待确认不推荐
-    if (constraints.canteen && d.canteen !== constraints.canteen) return false;
-    if (constraints.maxPrice != null) {
-      if (d.reference_price == null) return false; // 未知价不声称符合预算
-      if (d.reference_price > constraints.maxPrice) return false;
-    }
-    return true;
-  });
-  // 评分依据：同食堂优先；有有效评价的优先；无差评(问题标签)倾向的优先
-  const scored = dishes.map(d => {
-    const s = stats(d.dish_id);
-    const sameCanteen = constraints.canteen ? (d.canteen === constraints.canteen ? 1 : 0) : 0;
-    const issueCount = Object.values(s.n_r).reduce((a, b) => a + b, 0);
-    // 分数：同食堂+2，有评价+1，问题少者优先
-    const score = sameCanteen * 2 + (s.N > 0 ? 1 : 0) - issueCount * 0.1;
-    return { dish: d, stats: s, score, issueCount };
-  });
-  scored.sort((a, b) => b.score - a.score);
-  return scored.slice(0, 5);
-}
-
-/* ===================== 7. 评价提交/更新/撤回 ===================== */
-function validateReview(form) {
-  // 至少一项结构化体验
-  const hasAttr = Object.keys(ATTRS).some(k => form[k] != null && form[k] !== '');
-  const hasIssue = (form.issue_tags || []).length > 0;
-  if (!hasAttr && !hasIssue) {
-    return { ok: false, msg: '请至少选择一项具体体验（咸淡/辣度/油腻感/分量）或具体问题标签。仅文字或图片不能构成有效评价。' };
-  }
-  return { ok: true };
-}
-
-function findMyActiveReview(dishId) {
-  const rid = currentReviewer();
-  return getReviews().find(r => r.dish_id === dishId && r.reviewer_id === rid && r.status === 'active') || null;
-}
-
-function saveReview(dishId, form) {
-  const v = validateReview(form);
-  if (!v.ok) return v;
-  const rid = currentReviewer();
-  const now = new Date().toISOString();
-  const reviews = getReviews();
-  const existing = reviews.find(r => r.dish_id === dishId && r.reviewer_id === rid && r.status === 'active');
-  if (existing) {
-    // 更新：替换当前版本，不新增
-    Object.assign(existing, form, { edited_at: now, recorded_at: now.slice(0, 10) });
-    // 体验日期：若用户填了则更新，普通编辑不自动刷新体验日
-    if (!form.experience_at) existing.experience_at = existing.experience_at;
-    saveReviews(reviews);
-    return { ok: true, action: 'updated', review: existing };
-  } else {
-    const newRev = {
-      review_id: 'r_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
-      dish_id: dishId, reviewer_id: rid, status: 'active',
-      saltiness: form.saltiness || null,
-      spiciness: form.spiciness || null,
-      oiliness: form.oiliness || null,
-      portion: form.portion || null,
-      issue_tags: form.issue_tags || [],
-      text: form.text || '',
-      images: form.images || [],
-      source_type: 'user',
-      created_at: now, edited_at: null,
-      experience_at: form.experience_at || null,
-      recorded_at: now.slice(0, 10)
-    };
-    reviews.push(newRev);
-    saveReviews(reviews);
-    return { ok: true, action: 'created', review: newRev };
-  }
-}
-
-function withdrawReview(reviewId) {
-  const rid = currentReviewer();
-  const reviews = getReviews();
-  const r = reviews.find(x => x.review_id === reviewId);
-  if (!r) return { ok: false, msg: '评价不存在' };
-  if (r.reviewer_id !== rid) return { ok: false, msg: '无权限操作他人评价' };
-  r.status = 'withdrawn';
-  saveReviews(reviews);
-  return { ok: true };
-}
-
-/* ===================== 8. 举报 ===================== */
-function submitReport(reviewId, reason) {
-  if (!reason || !reason.trim()) return { ok: false, msg: '请填写举报原因' };
-  const reports = getReports();
-  reports.push({
-    report_id: 'rep_' + Date.now(),
-    review_id: reviewId,
-    reason: reason.trim(),
-    report_status: 'pending',
-    created_at: new Date().toISOString(),
-    decision_authority: null,
-    decision_at: null
-  });
-  saveReports(reports);
-  return { ok: true };
-}
-
-// 受控模拟处置（仅授权角色）— 演示用，不冒充真实审核
-function simulateRestrict(reviewId, restrict) {
-  const reviews = getReviews();
-  const r = reviews.find(x => x.review_id === reviewId);
-  if (!r) return { ok: false, msg: '评价不存在' };
-  r.status = restrict ? 'restricted' : 'active';
-  saveReviews(reviews);
-  return { ok: true };
-}
-
-/* ===================== 9. 路由 ===================== */
-function route() {
-  const h = location.hash || '#/';
-  if (h === '#/' || h === '#' || h === '') renderP01();
-  else if (h.startsWith('#/dish/')) renderP02(h.slice(7));
-  else if (h.startsWith('#/review/')) renderP03(h.slice(9));
-  else renderP01();
-}
-function go(path) { location.hash = path; }
-
-window.addEventListener('hashchange', route);
-
-/* ===================== 10. P01 查询页 ===================== */
-function renderP01() {
-  const app = document.getElementById('app');
-  app.innerHTML = `
-    <header class="app-header">
-      <div class="header-title">校园食堂避雷决策助手</div>
-      <div class="header-sub">查菜、看体验、避开踩雷窗口</div>
-    </header>
-    <main class="page p01">
-      <div class="search-card">
-        <div class="search-row">
-          <input type="text" id="q-input" placeholder="输入菜名或窗口，如：黄焖鸡" autocomplete="off">
-          <button class="btn-primary" id="q-btn">查询</button>
-        </div>
-        <div class="search-hint">同名菜在不同食堂/窗口为独立对象，评价不串联</div>
-      </div>
-      <div id="p01-results" class="p01-results"></div>
-      <div class="demo-notice">当前为演示环境，数据为虚构演示数据，不代表真实购买验证。</div>
-    </main>`;
-  const input = document.getElementById('q-input');
-  const btn = document.getElementById('q-btn');
-  const results = document.getElementById('p01-results');
-
-  function doSearch() {
-    const q = input.value.trim();
-    if (!q) { results.innerHTML = '<div class="empty-tip">请输入菜名或窗口关键词</div>'; return; }
-    results.innerHTML = '<div class="loading">查询中…</div>';
-    // 模拟异步
-    setTimeout(() => {
-      try {
-        const res = searchDishes(q);
-        if (res.type === 'no_result') {
-          results.innerHTML = `<div class="empty-tip">未找到与「${escapeHtml(q)}」相关的菜品。可换关键词重试。<br><span class="muted">（无结果不等于现实中未售卖）</span></div>`;
-        } else {
-          results.innerHTML = res.list.map(d => dishResultCard(d)).join('');
-          bindResultCards();
+// 获取合并后的菜品数据（基础数据 + 用户评分覆盖）
+function getMergedDishes() {
+    const overrides = loadDishOverrides();
+    return DISHES.map(d => {
+        if (overrides[d.id]) {
+            return { ...d, ...overrides[d.id] };
         }
-      } catch (e) {
-        results.innerHTML = `<div class="error-tip">查询失败：${escapeHtml(e.message)} <button class="btn-link" onclick="doSearch()">重试</button></div>`;
-      }
-    }, 200);
-  }
-  window.doSearch = doSearch;
-  btn.onclick = doSearch;
-  input.addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
-  input.focus();
+        return d;
+    });
 }
 
-function dishResultCard(d) {
-  const ss = SALE_STATUS[d.sale_status] || SALE_STATUS.on_sale;
-  return `<div class="dish-result" data-id="${d.dish_id}">
-    <div class="dish-result-name">${escapeHtml(d.name)}</div>
-    <div class="dish-result-meta">${escapeHtml(d.canteen)} · ${escapeHtml(d.stall)}</div>
-    <div class="dish-result-foot">
-      <span class="status-pill ${ss.cls}">${ss.label}</span>
-      <span class="price">参考价 ¥${d.reference_price ?? '未知'}</span>
-      <span class="source-tag">${SOURCE_LABEL[d.source_type] || ''}</span>
-    </div>
-  </div>`;
+function getAllReviews() {
+    return [...REVIEWS, ...loadUserReviews()];
 }
 
-function bindResultCards() {
-  document.querySelectorAll('.dish-result').forEach(el => {
-    el.onclick = () => go('/dish/' + el.dataset.id);
-  });
-}
-
-/* ===================== 11. P02 详情页 ===================== */
-function renderP02(dishId) {
-  const app = document.getElementById('app');
-  const dish = dishById(dishId);
-  if (!dish) {
-    app.innerHTML = `<main class="page"><div class="error-tip">菜品不存在或已不可访问。<a href="#/" class="btn-link">返回查询</a></div></main>`;
-    return;
-  }
-  const s = stats(dishId);
-  const ss = SALE_STATUS[dish.sale_status];
-  const myRev = findMyActiveReview(dishId);
-
-  app.innerHTML = `
-    <header class="app-header">
-      <button class="back-btn" onclick="history.length>1?history.back():go('/')">←</button>
-      <div class="header-title">菜品详情</div>
-      <div style="width:40px"></div>
-    </header>
-    <main class="page p02">
-      <!-- D1 身份 -->
-      <section class="card">
-        <h1 class="dish-name">${escapeHtml(dish.name)}</h1>
-        <div class="dish-meta">${escapeHtml(dish.canteen)} · ${escapeHtml(dish.stall)}</div>
-        <div class="info-row">
-          <span class="status-pill ${ss.cls}">${ss.label}</span>
-          <span class="price">参考价 ¥${dish.reference_price ?? '未知'}</span>
-        </div>
-        <div class="info-sub">价格来源：${escapeHtml(dish.price_source || '未知')} · 确认时间 ${fmtDate(dish.price_confirmed_at)}</div>
-        <div class="info-sub">菜品ID：${dish.dish_id} · ${SOURCE_LABEL[dish.source_type]}</div>
-      </section>
-
-      <!-- D2 体验摘要 -->
-      <section class="card">
-        <h2 class="sec-title">真实体验</h2>
-        <div class="N-info">当前有效评价 N = <b>${s.N}</b> 条</div>
-        ${Object.keys(ATTRS).map(k => attrBlock(k, s)).join('')}
-      </section>
-
-      <!-- D3 具体问题 -->
-      <section class="card">
-        <h2 class="sec-title">具体踩雷原因</h2>
-        ${issueBlock(s, dishId)}
-      </section>
-
-      <!-- D4 原始评价 -->
-      <section class="card">
-        <h2 class="sec-title">原始评价与证据</h2>
-        <div id="review-list">${reviewList(s.reviews, dishId)}</div>
-      </section>
-
-      <!-- D5 替代推荐 -->
-      <section class="card">
-        <h2 class="sec-title">轻量替代推荐</h2>
-        <div id="rec-area">
-          <div class="rec-cons">
-            <label>食堂限制：
-              <select id="rec-canteen">
-                <option value="">不限</option>
-                <option>第一食堂</option><option>第二食堂</option>
-                <option>清真食堂</option><option>风味小吃街</option>
-              </select>
-            </label>
-            <label>预算上限(元)：<input type="number" id="rec-price" placeholder="如 15" min="1"></label>
-            <button class="btn-primary" id="rec-btn">主动寻找替代</button>
-          </div>
-          <div id="rec-results" class="muted">尚未触发推荐。推荐需主动发起，无合格候选时返回空结果。</div>
-        </div>
-      </section>
-
-      <!-- 进入评价 -->
-      <div class="action-bar">
-        <button class="btn-primary" onclick="go('/review/${dishId}')">${myRev ? '更新我的评价' : '我吃过，写评价'}</button>
-      </div>
-    </main>`;
-
-  // 绑定问题核查
-  bindIssueDrill(dishId);
-  bindReviewReports(dishId);
-  // 推荐
-  document.getElementById('rec-btn').onclick = () => {
-    const canteen = document.getElementById('rec-canteen').value;
-    const priceRaw = document.getElementById('rec-price').value;
-    const maxPrice = priceRaw === '' ? null : Number(priceRaw);
-    const res = recommend(dishId, { canteen: canteen || null, maxPrice });
-    const box = document.getElementById('rec-results');
-    if (res.length === 0) {
-      box.innerHTML = `<div class="empty-tip">无合格候选。硬约束未放宽，未知价格的菜品未被当作符合预算。</div>`;
-    } else {
-      box.innerHTML = '<div class="rec-list">' + res.map(r => recCard(r)).join('') + '</div>';
-      box.querySelectorAll('.rec-item').forEach(el => {
-        el.onclick = () => go('/dish/' + el.dataset.id);
-      });
+// ===== 值得排队算法（V1简化版）=====
+function getWorthTag(dish) {
+    if (dish.reviews < 10) {
+        return { type: 'none', label: '评价不足', icon: '⚪' };
     }
-  };
+    if (dish.rating >= 4.5) {
+        return { type: 'worth', label: '值得排队', icon: '🟢' };
+    }
+    if (dish.rating < 3.5) {
+        return { type: 'not-worth', label: '不值得排队', icon: '🔴' };
+    }
+    return { type: 'maybe', label: '可尝鲜', icon: '🟡' };
 }
 
-function attrBlock(k, s) {
-  const meta = ATTRS[k];
-  const nd = s.N_d[k];
-  const lv = sampleLevel(nd);
-  const dist = s.dist[k];
-  const parts = Object.entries(dist).filter(([, c]) => c > 0).map(([v, c]) => `${v} ${c}条`);
-  const distText = parts.length ? parts.join('，') : '无反馈';
-  return `<div class="attr-row">
-    <div class="attr-head">
-      <span class="attr-name">${meta.label}</span>
-      <span class="attr-denom">相关反馈 ${nd}/${s.N} 条</span>
-      <span class="sample-lv ${lv.cls}">${lv.text}</span>
-    </div>
-    <div class="attr-dist">${distText}</div>
-  </div>`;
+// 算法透明化文案
+function getAlgoTransparentText(dish) {
+    const worth = getWorthTag(dish);
+    if (worth.type === 'none') {
+        return `评价不足10条（当前${dish.reviews}条），暂不判定`;
+    }
+    return `近30天 ${dish.reviews} 条评价，均分 ${dish.rating} → ${worth.label}`;
 }
 
-function issueBlock(s, dishId) {
-  const issues = ISSUE_TAGS.map(t => ({ tag: t, n: s.n_r[t] })).filter(x => x.n > 0);
-  if (issues.length === 0) {
-    return `<div class="muted">当前无被标注的具体问题。<br><span class="muted">注意：没有问题标签不等于肯定无问题。</span></div>`;
-  }
-  return `<div class="issue-list">${issues.map(x =>
-    `<div class="issue-item" data-issue="${escapeHtml(x.tag)}" data-dish="${dishId}">
-       <span class="issue-tag">${escapeHtml(x.tag)}</span>
-       <span class="issue-count">${x.n} 条反馈</span>
-       <span class="issue-drill">核查原始评价 →</span>
-     </div>`).join('')}</div>
-    <div id="issue-evidence" class="issue-evidence"></div>`;
+// ===== 建设性避雷建议 =====
+function getAvoidAdvice(dish) {
+    const allReviews = getAllReviews().filter(r => r.dishId === dish.id);
+    const allTags = allReviews.flatMap(r => r.tags || []);
+    const dishTags = dish.tags || [];
+    const combinedTags = [...allTags, ...dishTags];
+
+    if (combinedTags.some(t => t.includes('排队') || t.includes('慢'))) {
+        return '建议错峰前往（避开 11:30-12:30 高峰）';
+    }
+    if (combinedTags.some(t => t.includes('出餐'))) {
+        return '出餐较慢，赶时间慎选';
+    }
+    if (combinedTags.some(t => t.includes('踩雷') || t.includes('口味差') || t.includes('难吃'))) {
+        return '近期评价不佳，可尝试同窗口其他高分菜品';
+    }
+    if (combinedTags.some(t => t.includes('量少') || t.includes('份量'))) {
+        return '饭量较大者慎选，可考虑加饭';
+    }
+    if (combinedTags.some(t => t.includes('价格') || t.includes('贵'))) {
+        return '价格偏高，建议对比其他窗口同类菜品';
+    }
+    return '近期评价不佳，建议观望';
 }
 
-function bindIssueDrill(dishId) {
-  document.querySelectorAll('.issue-item').forEach(el => {
-    el.onclick = () => {
-      const issue = el.dataset.issue;
-      const s = stats(dishId);
-      const matched = s.reviews.filter(r => (r.issue_tags || []).includes(issue));
-      const box = document.getElementById('issue-evidence');
-      box.innerHTML = `<div class="evidence-head">问题「${escapeHtml(issue)}」参与计数的原始评价（共 ${matched.length} 条）：
-        <button class="btn-link" onclick="document.getElementById('issue-evidence').innerHTML=''">返回</button></div>
-        ${matched.map(r => reviewCard(r, dishId)).join('')}`;
-      bindReviewReports(dishId);
-    };
-  });
+// ===== 内容安全 =====
+function containsSensitiveWord(text) {
+    return SENSITIVE_WORDS.some(w => text.includes(w));
 }
 
-function reviewList(revs, dishId) {
-  if (revs.length === 0) return '<div class="muted">该菜品暂无有效评价。</div>';
-  return revs.map(r => reviewCard(r, dishId)).join('');
+function getTodayReviewCount() {
+    const today = new Date().toDateString();
+    const savedDate = localStorage.getItem(STORAGE_KEYS.REVIEW_COUNT_DATE);
+    if (savedDate !== today) {
+        localStorage.setItem(STORAGE_KEYS.REVIEW_COUNT_DATE, today);
+        localStorage.setItem(STORAGE_KEYS.REVIEW_COUNT_TODAY, '0');
+        return 0;
+    }
+    return parseInt(localStorage.getItem(STORAGE_KEYS.REVIEW_COUNT_TODAY) || '0');
 }
 
-function reviewCard(r, dishId) {
-  const mine = r.reviewer_id === currentReviewer();
-  const tw = timeWindow(r.experience_at);
-  const attrs = [];
-  Object.keys(ATTRS).forEach(k => { if (r[k]) attrs.push(`${ATTRS[k].label}:${r[k]}`); });
-  const issues = (r.issue_tags || []).map(t => `<span class="chip">${escapeHtml(t)}</span>`).join('');
-  return `<div class="review-card" data-rid="${r.review_id}">
-    <div class="review-head">
-      <span class="reviewer">${mine ? '我' : '评价者'}${r.reviewer_id.slice(-4)}</span>
-      <span class="source-tag">${SOURCE_LABEL[r.source_type]}</span>
-      ${mine ? '<span class="mine-tag">本人</span>' : ''}
-    </div>
-    <div class="review-attrs">${attrs.map(a => `<span class="chip chip-attr">${escapeHtml(a)}</span>`).join('')}</div>
-    ${issues ? `<div class="review-issues">${issues}</div>` : ''}
-    ${r.text ? `<div class="review-text">${escapeHtml(r.text)}</div>` : ''}
-    <div class="review-foot">
-      <span class="${tw.cls}">${tw.text}</span>
-      <span class="muted">记录于 ${fmtDate(r.recorded_at)}</span>
-    </div>
-    <div class="review-actions">
-      ${!mine ? `<button class="btn-link report-btn" data-rid="${r.review_id}">举报</button>` : '<span class="muted">本人评价，可在评价页更新/撤回</span>'}
-    </div>
-  </div>`;
+function incrementTodayReviewCount() {
+    const count = getTodayReviewCount() + 1;
+    localStorage.setItem(STORAGE_KEYS.REVIEW_COUNT_TODAY, String(count));
+    return count;
 }
 
-function bindReviewReports(dishId) {
-  document.querySelectorAll('.report-btn').forEach(btn => {
-    btn.onclick = () => {
-      const rid = btn.dataset.rid;
-      const reason = prompt('请填写举报原因（举报仅为待处理，不自动删除评价）：');
-      if (reason == null) return;
-      const res = submitReport(rid, reason);
-      if (res.ok) alert('举报已提交，状态为「待处理」，该评价仍正常计数。');
-      else alert(res.msg);
-    };
-  });
+// ===== 状态 =====
+let currentBannerIndex = 0;
+let bannerTimer = null;
+let selectedRating = 0;
+let selectedTags = [];
+let currentReviewDishId = null;
+
+// ===== 初始化 =====
+function init() {
+    renderBanner();
+    renderCanteens();
+    renderDualRank('good');
+    renderLatestReviews();
+    renderCategoryGrid();
+    renderAvoidList();
+    renderNewDishes();
+    renderMineStats();
+    startBannerAutoPlay();
 }
 
-function recCard(r) {
-  const d = r.dish;
-  const evLevel = sampleLevel(r.stats.N);
-  return `<div class="rec-item" data-id="${d.dish_id}">
-    <div class="rec-name">${escapeHtml(d.name)} <span class="muted">${escapeHtml(d.canteen)}·${escapeHtml(d.stall)}</span></div>
-    <div class="rec-meta">¥${d.reference_price} · 有效评价 ${r.stats.N} 条 · ${evLevel.text}</div>
-    <div class="rec-reason">${r.stats.N > 0 ? `有 ${r.stats.N} 条体验反馈；问题标签共 ${r.issueCount} 项` : '暂无体验反馈，仅作为候选'}</div>
-  </div>`;
+// ===== 导航 =====
+function navigateTo(page) {
+    document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+    const target = document.getElementById('page-' + page);
+    if (target) {
+        target.style.display = 'block';
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.toggle('active', item.dataset.page === page);
+    });
+
+    const searchBtn = document.querySelector('.search-btn');
+    if (searchBtn) {
+        searchBtn.style.display = page === 'search' ? 'none' : 'flex';
+    }
+
+    // 页面进入时刷新特定内容
+    if (page === 'mine') renderMineStats();
+    if (page === 'myreviews') renderMyReviews();
+    if (page === 'favorites') renderFavorites();
+    if (page === 'rank') {
+        const activeTab = document.querySelector('.rank-tab.active');
+        if (activeTab) {
+            const type = activeTab.getAttribute('onclick').match(/'(\w+)'/)[1];
+            switchRankTab(type, activeTab);
+        }
+    }
 }
 
-/* ===================== 12. P03 评价编辑 ===================== */
-function renderP03(dishId) {
-  const app = document.getElementById('app');
-  const dish = dishById(dishId);
-  if (!dish) { app.innerHTML = `<main class="page"><div class="error-tip">菜品不存在。<a href="#/" class="btn-link">返回</a></div></main>`; return; }
-  const myRev = findMyActiveReview(dishId);
+// ===== Banner轮播 =====
+function getBannerDishes() {
+    const dishes = getMergedDishes();
+    return [...dishes].sort((a, b) => b.rating - a.rating).slice(0, 3);
+}
 
-  app.innerHTML = `
-    <header class="app-header">
-      <button class="back-btn" onclick="go('/dish/${dishId}')">←</button>
-      <div class="header-title">${myRev ? '更新我的评价' : '评价这道菜'}</div>
-      <div style="width:40px"></div>
-    </header>
-    <main class="page p03">
-      <section class="card">
-        <div class="dish-name">${escapeHtml(dish.name)}</div>
-        <div class="dish-meta">${escapeHtml(dish.canteen)} · ${escapeHtml(dish.stall)}</div>
-        <div class="info-sub">菜品ID：${dish.dish_id}</div>
-      </section>
+function renderBanner() {
+    const dishes = getBannerDishes();
+    const dotsContainer = document.getElementById('banner-dots');
+    dotsContainer.innerHTML = '';
+    dishes.forEach((_, i) => {
+        const dot = document.createElement('span');
+        dot.className = 'dot' + (i === 0 ? ' active' : '');
+        dotsContainer.appendChild(dot);
+    });
+    updateBanner(0);
+}
 
-      <form id="review-form" class="card">
-        <h2 class="sec-title">具体体验（可跳过，至少一项有效）</h2>
-        ${Object.keys(ATTRS).map(k => attrEditor(k, myRev)).join('')}
+function updateBanner(index) {
+    const dishes = getBannerDishes();
+    if (dishes.length === 0) return;
+    currentBannerIndex = index % dishes.length;
+    const dish = dishes[currentBannerIndex];
+    const worth = getWorthTag(dish);
 
-        <h2 class="sec-title">具体问题标签（选填，可多选）</h2>
-        <div class="tag-picker">
-          ${ISSUE_TAGS.map(t => `<label class="tag-opt"><input type="checkbox" value="${t}" ${(myRev?.issue_tags||[]).includes(t)?'checked':''}>${t}</label>`).join('')}
+    document.getElementById('banner-title').textContent = dish.name;
+    document.getElementById('banner-desc').textContent = dish.canteen + ' · ¥' + dish.price + ' · ' + dish.desc;
+    document.getElementById('banner-rating').innerHTML = `⭐ ${dish.rating} | 💬 ${dish.reviews}条 | ${worth.icon} ${worth.label}`;
+
+    document.querySelector('.banner-image').style.background = `linear-gradient(135deg, ${dish.imgColor} 0%, ${dish.imgColor}88 100%)`;
+
+    document.querySelectorAll('.banner-dots .dot').forEach((dot, i) => {
+        dot.classList.toggle('active', i === currentBannerIndex);
+    });
+
+    document.querySelector('.banner-card').onclick = () => openDishDetail(dish.id);
+}
+
+function startBannerAutoPlay() {
+    if (bannerTimer) clearInterval(bannerTimer);
+    bannerTimer = setInterval(() => {
+        updateBanner(currentBannerIndex + 1);
+    }, 4000);
+}
+
+// ===== 食堂导航 =====
+function renderCanteens() {
+    const container = document.getElementById('canteen-grid');
+    const dishes = getMergedDishes();
+    container.innerHTML = CANTEENS.map(c => {
+        const dishCount = dishes.filter(d => d.canteen === c.name).length;
+        return `
+            <div class="canteen-card" onclick="openCanteenDetail(${c.id})">
+                <div class="canteen-icon">${c.icon}</div>
+                <div class="canteen-info">
+                    <h3>${c.name}</h3>
+                    <p>⭐ ${c.rating} · ${dishCount}道菜</p>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// 食堂详情页
+function openCanteenDetail(canteenId) {
+    const canteen = CANTEENS.find(c => c.id === canteenId);
+    if (!canteen) return;
+    const dishes = getMergedDishes().filter(d => d.canteen === canteen.name);
+
+    document.getElementById('canteen-detail-content').innerHTML = `
+        <div class="canteen-detail-header">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+                <span style="font-size:40px">${canteen.icon}</span>
+                <div>
+                    <h2>${canteen.name}</h2>
+                    <div class="canteen-detail-meta">
+                        <span>⭐ ${canteen.rating}</span>
+                        <span>📍 ${canteen.location}</span>
+                        <span>🍽️ ${dishes.length}道菜</span>
+                    </div>
+                </div>
+            </div>
+            <div class="canteen-detail-tags">
+                ${canteen.tags.map(t => `<span>${t}</span>`).join('')}
+            </div>
         </div>
-
-        <h2 class="sec-title">文字描述（选填）</h2>
-        <textarea id="rev-text" rows="3" placeholder="补充具体感受（仅文字不能构成有效评价）">${escapeHtml(myRev?.text||'')}</textarea>
-
-        <h2 class="sec-title">体验日期（可选，未知可留空）</h2>
-        <input type="date" id="rev-date" value="${myRev?.experience_at||''}">
-        <div class="info-sub">体验日期仅为自报，非购买核验；留空表示未知。</div>
-
-        <div id="form-msg" class="form-msg"></div>
-        <div class="form-actions">
-          <button type="button" class="btn-primary" id="save-btn">${myRev?'保存更新':'提交评价'}</button>
-          ${myRev ? '<button type="button" class="btn-danger" id="wd-btn">撤回本人评价</button>' : ''}
-          <button type="button" class="btn-link" onclick="go('/dish/${dishId}')">取消</button>
+        <div class="section-header">
+            <h3>🍽️ 全部菜品（按评分排序）</h3>
         </div>
-      </form>
-    </main>`;
+        ${dishes.length > 0 ? `
+            <div class="dish-list">
+                ${dishes.sort((a, b) => b.rating - a.rating).map(d => renderDishCard(d)).join('')}
+            </div>
+        ` : '<div class="empty-state"><div class="empty-icon">🍽️</div><p>该食堂暂无菜品数据</p></div>'}
+    `;
 
-  document.getElementById('save-btn').onclick = () => {
-    const form = collectForm();
-    const btn = document.getElementById('save-btn');
-    btn.disabled = true; btn.textContent = '保存中…';
+    navigateTo('canteen');
+}
+
+// 菜品卡片通用渲染
+function renderDishCard(dish) {
+    const worth = getWorthTag(dish);
+    let tagHtml = '';
+    if (dish.isNew) tagHtml = '<span class="dish-card-tag tag-new">🆕 新品</span>';
+    else if (worth.type === 'not-worth') tagHtml = '<span class="dish-card-tag tag-avoid">⚠️ 避雷</span>';
+    else if (worth.type === 'worth') tagHtml = '<span class="dish-card-tag" style="background:#E8F5E9;color:#00C853">👍 推荐</span>';
+
+    return `
+        <div class="dish-card" onclick="openDishDetail(${dish.id})">
+            <div class="dish-card-img" style="background:${dish.imgColor}20">${dish.emoji}</div>
+            <div class="dish-card-info">
+                ${tagHtml}
+                <h4>${dish.name}</h4>
+                <div class="dish-card-meta">
+                    <span class="rating">★${dish.rating}</span>
+                    <span class="price">¥${dish.price}</span>
+                </div>
+                <span class="worth-tag ${worth.type}">${worth.icon} ${worth.label}</span>
+            </div>
+        </div>
+    `;
+}
+
+// ===== 双榜（好评榜/避雷榜）=====
+function switchDualTab(type, el) {
+    document.querySelectorAll('.dual-tab-btn').forEach(t => {
+        t.classList.remove('active', 'good', 'bad');
+    });
+    el.classList.add('active', type);
+    renderDualRank(type);
+}
+
+function renderDualRank(type) {
+    const dishes = getMergedDishes();
+    const container = document.getElementById('dual-rank-list');
+    let list;
+
+    if (type === 'good') {
+        // 好评榜：评分≥4.5 且评价数≥10，按评分倒序
+        list = dishes.filter(d => d.rating >= 4.5 && d.reviews >= 10)
+                     .sort((a, b) => b.rating - a.rating)
+                     .slice(0, 5);
+    } else {
+        // 避雷榜：评分<3.5 且评价数≥10，按评分升序
+        list = dishes.filter(d => d.rating < 3.5 && d.reviews >= 10)
+                     .sort((a, b) => a.rating - b.rating)
+                     .slice(0, 5);
+    }
+
+    if (list.length === 0) {
+        container.innerHTML = `<div class="empty-state"><div class="empty-icon">${type === 'good' ? '🌟' : '🎉'}</div><p>${type === 'good' ? '暂无高分菜品，快来贡献首评吧' : '暂无踩雷菜品，恭喜！'}</p></div>`;
+        return;
+    }
+
+    container.innerHTML = list.map((d, i) => {
+        const rankClass = `${type}-top${i + 1}`;
+        const worth = getWorthTag(d);
+        let adviceHtml = '';
+        if (type === 'bad') {
+            adviceHtml = `<div class="avoid-advice">${getAvoidAdvice(d)}</div>`;
+        }
+        return `
+            <div class="rank-item" onclick="openDishDetail(${d.id})">
+                <div class="rank-num ${rankClass}">${i + 1}</div>
+                <div class="rank-thumb" style="background:${d.imgColor}20">${d.emoji}</div>
+                <div class="rank-info">
+                    <h4>${d.name}</h4>
+                    <p>${d.canteen} · <span class="price-tag">¥${d.price}</span></p>
+                    <span class="worth-tag ${worth.type}">${worth.icon} ${worth.label}</span>
+                    ${adviceHtml}
+                </div>
+                <div class="rank-score">
+                    <div class="score-num">${d.rating}</div>
+                    <div class="score-label">${d.reviews}评</div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// ===== 排行榜全量 =====
+function switchRankTab(type, el) {
+    document.querySelectorAll('.rank-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+
+    const dishes = getMergedDishes();
+    let sorted;
+    if (type === 'rating') {
+        sorted = [...dishes].sort((a, b) => b.rating - a.rating);
+    } else if (type === 'hot') {
+        sorted = [...dishes].sort((a, b) => b.reviews - a.reviews);
+    } else if (type === 'value') {
+        sorted = [...dishes].sort((a, b) => (b.rating / b.price) - (a.rating / a.price));
+    }
+
+    const container = document.getElementById('rank-full-list');
+    container.innerHTML = sorted.map((d, i) => {
+        const rankClass = i < 3 ? `good-top${i + 1}` : '';
+        const valueScore = (d.rating / d.price).toFixed(2);
+        const subInfo = type === 'value' ? `性价比 ${valueScore}` : `${d.reviews}条评价`;
+        const worth = getWorthTag(d);
+        return `
+            <div class="rank-item" onclick="openDishDetail(${d.id})">
+                <div class="rank-num ${rankClass}">${i + 1}</div>
+                <div class="rank-thumb" style="background:${d.imgColor}20">${d.emoji}</div>
+                <div class="rank-info">
+                    <h4>${d.name}</h4>
+                    <p>${d.canteen} · <span class="price-tag">¥${d.price}</span></p>
+                    <span class="worth-tag ${worth.type}">${worth.icon} ${worth.label}</span>
+                </div>
+                <div class="rank-score">
+                    <div class="score-num">${d.rating}</div>
+                    <div class="score-label">${subInfo}</div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// ===== 最新评价 =====
+function renderLatestReviews() {
+    const allReviews = getAllReviews().sort((a, b) => b.id - a.id).slice(0, 3);
+    const container = document.getElementById('latest-reviews');
+    const dishes = getMergedDishes();
+    container.innerHTML = allReviews.map(r => {
+        const dish = dishes.find(d => d.id === r.dishId);
+        return `
+            <div class="review-card" onclick="openDishDetail(${r.dishId})">
+                <div class="review-header">
+                    <div class="review-avatar">${r.avatar}</div>
+                    <div class="review-user">
+                        <h5>${r.user}</h5>
+                        <p>${r.time}</p>
+                    </div>
+                </div>
+                <div class="review-stars">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</div>
+                <p class="review-text">${r.text}</p>
+                <span class="review-dish">${dish ? dish.emoji + ' ' + dish.name : '已下架'}</span>
+            </div>
+        `;
+    }).join('');
+}
+
+// ===== 分类 =====
+function renderCategoryGrid() {
+    const container = document.getElementById('category-grid');
+    container.innerHTML = CATEGORIES.map(c => `
+        <div class="category-item" onclick="searchByCategory('${c.name}')">
+            <div class="category-icon" style="background:${c.color}">${c.icon}</div>
+            <span>${c.name}</span>
+        </div>
+    `).join('');
+}
+
+function searchByCategory(cat) {
+    navigateTo('search');
+    const input = document.getElementById('search-input');
+    input.value = cat;
+    handleSearch(cat);
+}
+
+// ===== 避雷指南 =====
+function renderAvoidList() {
+    const dishes = getMergedDishes().filter(d => d.rating < 3.5);
+    const container = document.getElementById('avoid-list');
+    if (dishes.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-icon">🎉</div><p>暂无踩雷菜品</p></div>';
+        return;
+    }
+    container.innerHTML = dishes.map(d => renderDishCard(d)).join('');
+}
+
+// ===== 新品上架 =====
+function renderNewDishes() {
+    const dishes = getMergedDishes().filter(d => d.isNew);
+    const container = document.getElementById('new-dish-list');
+    if (dishes.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><p>暂无新品</p></div>';
+        return;
+    }
+    container.innerHTML = dishes.map(d => renderDishCard(d)).join('');
+}
+
+// ===== 搜索 =====
+function handleSearch(keyword) {
+    const container = document.getElementById('search-results');
+    if (!keyword || keyword.trim() === '') {
+        container.innerHTML = '';
+        return;
+    }
+    const dishes = getMergedDishes();
+    const results = dishes.filter(d =>
+        d.name.includes(keyword) ||
+        d.canteen.includes(keyword) ||
+        d.category.includes(keyword) ||
+        d.tags.some(t => t.includes(keyword))
+    );
+
+    if (results.length === 0) {
+        container.innerHTML = `<div class="empty-state"><div class="empty-icon">🔍</div><p>没有找到「${keyword}」</p><p class="empty-hint">换个关键词试试</p></div>`;
+        return;
+    }
+
+    container.innerHTML = results.map(d => renderDishCard(d)).join('');
+}
+
+function quickSearch(keyword) {
+    const input = document.getElementById('search-input');
+    input.value = keyword;
+    handleSearch(keyword);
+}
+
+// ===== 菜品详情 =====
+function openDishDetail(id) {
+    const dishes = getMergedDishes();
+    const dish = dishes.find(d => d.id === id);
+    if (!dish) return;
+
+    const allReviews = getAllReviews();
+    const dishReviews = allReviews.filter(r => r.dishId === id);
+    const worth = getWorthTag(dish);
+    const isFav = loadFavorites().includes(id);
+
+    const reviewHTML = dishReviews.length > 0
+        ? dishReviews.map(r => {
+            const isBad = r.rating <= 2;
+            return `
+                <div class="review-card" style="margin-bottom:10px">
+                    <div class="review-header">
+                        <div class="review-avatar">${r.avatar}</div>
+                        <div class="review-user">
+                            <h5>${isBad ? '匿名同学' : r.user}</h5>
+                            <p>${r.time}${r.isFirst ? ' 🏆首评' : ''}</p>
+                        </div>
+                    </div>
+                    <div class="review-stars">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</div>
+                    <p class="review-text">${r.text}</p>
+                    ${r.tags && r.tags.length > 0 ? `<div style="margin-top:6px">${r.tags.map(t => `<span class="detail-tag" style="margin-right:4px">#${t}</span>`).join('')}</div>` : ''}
+                </div>
+            `;
+        }).join('')
+        : '<div class="empty-state"><div class="empty-icon">📝</div><p>还没有人评价，吃完来抢首评！</p></div>';
+
+    // 建设性避雷建议（仅不值得排队时展示）
+    const adviceHtml = worth.type === 'not-worth'
+        ? `<div class="avoid-advice" style="margin-bottom:12px">${getAvoidAdvice(dish)}</div>`
+        : '';
+
+    document.getElementById('dish-detail-content').innerHTML = `
+        <div class="detail-hero" style="background:linear-gradient(135deg, ${dish.imgColor}40, ${dish.imgColor}20)">${dish.emoji}</div>
+        <div class="detail-body">
+            <h2 class="detail-title">${dish.name}</h2>
+            <div class="detail-meta">
+                <span class="rating-big">★ ${dish.rating}</span>
+                <span style="color:#999">${dish.reviews}条评价</span>
+                <span class="price-big">¥${dish.price}</span>
+            </div>
+            <div class="detail-tags">
+                <span class="worth-tag ${worth.type}">${worth.icon} ${worth.label}</span>
+                ${dish.tags.map(t => `<span class="detail-tag">${t}</span>`).join('')}
+            </div>
+            <div class="algo-transparent">${getAlgoTransparentText(dish)}</div>
+            ${adviceHtml}
+            <p style="font-size:14px;color:#666;line-height:1.6;margin:12px 0 16px">${dish.desc}</p>
+            <div class="detail-info-box">
+                <h4>📍 菜品信息</h4>
+                <div class="detail-info-row"><span>所在食堂</span><span>${dish.canteen}</span></div>
+                <div class="detail-info-row"><span>窗口位置</span><span>${dish.window}</span></div>
+                <div class="detail-info-row"><span>菜品分类</span><span>${dish.category}</span></div>
+                <div class="detail-info-row"><span>人均价格</span><span>¥${dish.price}</span></div>
+            </div>
+            <div class="detail-actions">
+                <button class="detail-btn ${isFav ? 'btn-primary' : 'btn-outline'}" onclick="toggleFavorite(${dish.id})">${isFav ? '★ 已收藏' : '☆ 收藏'}</button>
+                <button class="detail-btn btn-primary" onclick="openReviewModal(${dish.id})">✍️ 写点评</button>
+            </div>
+            <div class="detail-reviews">
+                <h4>💬 用户评价 (${dishReviews.length})</h4>
+                ${reviewHTML}
+            </div>
+        </div>
+    `;
+
+    document.getElementById('dish-detail-modal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeDishDetail() {
+    document.getElementById('dish-detail-modal').style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+// ===== 收藏 =====
+function toggleFavorite(dishId) {
+    const favs = loadFavorites();
+    const idx = favs.indexOf(dishId);
+    if (idx >= 0) {
+        favs.splice(idx, 1);
+        showToast('已取消收藏');
+    } else {
+        favs.push(dishId);
+        showToast('收藏成功');
+    }
+    saveFavorites(favs);
+    openDishDetail(dishId); // 刷新详情页按钮状态
+    renderMineStats();
+}
+
+// ===== 点评弹窗 =====
+function openReviewModal(dishId) {
+    currentReviewDishId = dishId;
+    selectedRating = 0;
+    selectedTags = [];
+
+    const dishes = getMergedDishes();
+    const dish = dishes.find(d => d.id === dishId);
+
+    // 频率限制：每日5条
+    if (getTodayReviewCount() >= 5) {
+        showToast('今日评价已达上限（5条），明天再来吧');
+        return;
+    }
+
+    document.getElementById('review-form').innerHTML = `
+        <div class="review-form-body">
+            <p style="font-size:14px;color:#666;margin-bottom:12px">为「${dish.emoji} ${dish.name}」打分</p>
+            <div class="rating-selector" id="rating-selector">
+                ${[1,2,3,4,5].map(n => `<span class="rating-star" data-rating="${n}" onclick="selectRating(${n})">★</span>`).join('')}
+            </div>
+            <label class="form-label">选择标签 <span style="color:#999;font-weight:400;font-size:12px">（必选至少1个，最多3个）</span></label>
+            <div class="tag-selector" id="tag-selector">
+                ${REVIEW_TAG_OPTIONS.map(t => `<span class="tag" onclick="toggleTag(this, '${t}')">${t}</span>`).join('')}
+            </div>
+            <label class="form-label">一句话评价 <span style="color:#999;font-weight:400;font-size:12px">（选填，≤200字）</span></label>
+            <textarea class="form-textarea" id="review-text" placeholder="说说你的用餐体验..." maxlength="200"></textarea>
+            <button class="submit-btn" onclick="submitReview()">发布点评</button>
+            <p style="font-size:11px;color:#BBB;text-align:center;margin-top:10px">今日已评价 ${getTodayReviewCount()}/5 条</p>
+        </div>
+    `;
+
+    closeDishDetail();
+    document.getElementById('review-modal').style.display = 'flex';
+}
+
+function closeReviewModal() {
+    document.getElementById('review-modal').style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+function selectRating(n) {
+    selectedRating = n;
+    document.querySelectorAll('#rating-selector .rating-star').forEach(star => {
+        const val = parseInt(star.dataset.rating);
+        star.classList.toggle('active', val <= n);
+    });
+}
+
+function toggleTag(el, tag) {
+    if (el.classList.contains('selected')) {
+        el.classList.remove('selected');
+        selectedTags = selectedTags.filter(t => t !== tag);
+    } else {
+        if (selectedTags.length >= 3) {
+            showToast('最多选择3个标签');
+            return;
+        }
+        el.classList.add('selected');
+        selectedTags.push(tag);
+    }
+}
+
+function submitReview() {
+    if (selectedRating === 0) {
+        showToast('请先打分');
+        return;
+    }
+    if (selectedTags.length === 0) {
+        showToast('请至少选择1个标签');
+        return;
+    }
+
+    const text = document.getElementById('review-text').value.trim();
+
+    // 敏感词过滤
+    if (text && containsSensitiveWord(text)) {
+        showToast('评价包含敏感词，请修改后提交');
+        return;
+    }
+
+    const allReviews = getAllReviews();
+    const dishReviews = allReviews.filter(r => r.dishId === currentReviewDishId);
+    const isFirst = dishReviews.length === 0;
+
+    const newReview = {
+        id: Date.now(),
+        dishId: currentReviewDishId,
+        user: '我',
+        avatar: '😊',
+        rating: selectedRating,
+        text: text || selectedTags.join('、'),
+        time: '刚刚',
+        tags: selectedTags,
+        isFirst: isFirst
+    };
+
+    // 持久化用户评价
+    const userReviews = loadUserReviews();
+    userReviews.unshift(newReview);
+    saveUserReviews(userReviews);
+
+    // 更新菜品评分（加权平均：旧总分+新评分 / 旧数量+1）
+    const overrides = loadDishOverrides();
+    const dish = DISHES.find(d => d.id === currentReviewDishId);
+    const current = overrides[currentReviewDishId] || { rating: dish.rating, reviews: dish.reviews };
+    const oldTotal = current.rating * current.reviews;
+    const newReviews = current.reviews + 1;
+    const newRating = Math.round((oldTotal + selectedRating) / newReviews * 10) / 10;
+    overrides[currentReviewDishId] = { rating: newRating, reviews: newReviews };
+    saveDishOverrides(overrides);
+
+    // 今日评价计数+1
+    incrementTodayReviewCount();
+
+    closeReviewModal();
+    showToast(isFirst ? '🏆 恭喜首评！评价发布成功' : '评价发布成功！');
+
+    // 刷新所有列表
+    renderDualRank(document.querySelector('.dual-tab-btn.active').dataset.tab);
+    renderLatestReviews();
+    renderAvoidList();
+    renderNewDishes();
+    renderMineStats();
+
+    // 重新打开详情
+    setTimeout(() => openDishDetail(currentReviewDishId), 300);
+}
+
+// ===== 我的页面 =====
+function renderMineStats() {
+    const userReviews = loadUserReviews();
+    const favs = loadFavorites();
+    document.getElementById('profile-stats').textContent = `已点评 ${userReviews.length} 道 · 收藏 ${favs.length} 道`;
+    document.getElementById('my-review-count').textContent = userReviews.length;
+    document.getElementById('my-fav-count').textContent = favs.length;
+}
+
+function renderMyReviews() {
+    const userReviews = loadUserReviews();
+    const dishes = getMergedDishes();
+    const container = document.getElementById('my-reviews-list');
+
+    if (userReviews.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-icon">📝</div><p>还没有点评，去发现美食吧！</p></div>';
+        return;
+    }
+
+    container.innerHTML = userReviews.map(r => {
+        const dish = dishes.find(d => d.id === r.dishId);
+        return `
+            <div class="review-card" onclick="openDishDetail(${r.dishId})">
+                <div class="review-header">
+                    <div class="review-avatar">${r.avatar}</div>
+                    <div class="review-user">
+                        <h5>${r.user}${r.isFirst ? ' 🏆' : ''}</h5>
+                        <p>${r.time}</p>
+                    </div>
+                </div>
+                <div class="review-stars">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</div>
+                <p class="review-text">${r.text}</p>
+                ${r.tags && r.tags.length > 0 ? `<div style="margin-top:6px">${r.tags.map(t => `<span class="detail-tag" style="margin-right:4px">#${t}</span>`).join('')}</div>` : ''}
+                <span class="review-dish">${dish ? dish.emoji + ' ' + dish.name : '已下架'}</span>
+            </div>
+        `;
+    }).join('');
+}
+
+function renderFavorites() {
+    const favs = loadFavorites();
+    const dishes = getMergedDishes().filter(d => favs.includes(d.id));
+    const container = document.getElementById('favorites-list');
+
+    if (dishes.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-icon">⭐</div><p>还没有收藏，去逛逛榜单吧</p></div>';
+        return;
+    }
+
+    container.innerHTML = dishes.map(d => renderDishCard(d)).join('');
+}
+
+// ===== 隐私弹窗 =====
+function showPrivacy() {
+    document.getElementById('privacy-modal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function closePrivacy() {
+    document.getElementById('privacy-modal').style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+// ===== Toast =====
+function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.style.display = 'block';
     setTimeout(() => {
-      const res = saveReview(dishId, form);
-      if (res.ok) {
-        document.getElementById('form-msg').innerHTML = `<div class="success-msg">${res.action==='created'?'评价已提交':'评价已更新'}，正在返回详情…</div>`;
-        setTimeout(() => go('/dish/' + dishId), 600);
-      } else {
-        document.getElementById('form-msg').innerHTML = `<div class="error-msg">${escapeHtml(res.msg)}</div>`;
-        btn.disabled = false; btn.textContent = myRev?'保存更新':'提交评价';
-      }
-    }, 300);
-  };
-  if (myRev) {
-    document.getElementById('wd-btn').onclick = () => {
-      if (!confirm('确认撤回该评价？撤回后将不再计入统计。')) return;
-      const res = withdrawReview(myRev.review_id);
-      if (res.ok) {
-        alert('已撤回，返回详情查看更新后的统计。');
-        go('/dish/' + dishId);
-      } else alert(res.msg);
-    };
-  }
+        toast.style.display = 'none';
+    }, 2000);
 }
 
-function attrEditor(k, myRev) {
-  const meta = ATTRS[k];
-  const cur = myRev?.[k] || '';
-  return `<div class="attr-editor">
-    <div class="attr-editor-name">${meta.label}</div>
-    <div class="attr-opts">
-      <label class="attr-opt"><input type="radio" name="${k}" value="" ${cur===''?'checked':''}>跳过</label>
-      ${meta.values.map(v => `<label class="attr-opt"><input type="radio" name="${k}" value="${v}" ${cur===v?'checked':''}>${v}</label>`).join('')}
-    </div>
-  </div>`;
-}
-
-function collectForm() {
-  const form = {};
-  Object.keys(ATTRS).forEach(k => {
-    const el = document.querySelector(`input[name="${k}"]:checked`);
-    form[k] = el && el.value ? el.value : null;
-  });
-  form.issue_tags = Array.from(document.querySelectorAll('.tag-opt input:checked')).map(el => el.value);
-  form.text = document.getElementById('rev-text').value.trim();
-  form.experience_at = document.getElementById('rev-date').value || null;
-  form.images = [];
-  return form;
-}
-
-/* ===================== 13. 工具 ===================== */
-function escapeHtml(s) {
-  if (s == null) return '';
-  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
-
-/* ===================== 14. 启动 ===================== */
-seedIfNeeded();
-route();
+// ===== 启动 =====
+init();
