@@ -128,6 +128,18 @@ function getAlgoTransparentText(dish) {
     return `近30天 ${dish.reviews} 条评价，均分 ${dish.rating} → ${worth.label}`;
 }
 
+// ===== 排队状态提示（V1基于评价标签）=====
+function getQueueStatus(dish) {
+    const allReviews = getAllReviews().filter(r => r.dishId === dish.id);
+    const recent = allReviews.filter(r => (r.daysAgo || 0) <= 7);
+    if (recent.length < 5) return null;
+    const queueCount = recent.filter(r => (r.tags || []).some(t => t.includes('排队'))).length;
+    const slowCount = recent.filter(r => (r.tags || []).some(t => t.includes('出餐') || t.includes('慢'))).length;
+    if (queueCount / recent.length >= 0.3) return { type: 'queue', text: '⏳ 近期排队较久' };
+    if (slowCount / recent.length >= 0.3) return { type: 'slow', text: '🐢 近期出餐较慢' };
+    return null;
+}
+
 // ===== 建设性避雷建议 =====
 function getAvoidAdvice(dish) {
     const allReviews = getAllReviews().filter(r => r.dishId === dish.id);
@@ -219,12 +231,14 @@ function navigateTo(page) {
     if (page === 'mine') renderMineStats();
     if (page === 'myreviews') renderMyReviews();
     if (page === 'favorites') renderFavorites();
-    if (page === 'rank') {
+    if (page === 'rank' || page === 'discover') {
         const activeTab = document.querySelector('.rank-tab.active');
         if (activeTab) {
             const type = activeTab.getAttribute('onclick').match(/'(\w+)'/)[1];
             switchRankTab(type, activeTab);
         }
+        renderAvoidList();
+        renderNewDishes();
     }
 }
 
@@ -376,6 +390,7 @@ function renderDualRank(type) {
         : dishes.filter(d => d.canteen === currentBuildingFilter);
 
     let list;
+    let doubtfulList = [];
 
     if (type === 'good') {
         // 好评榜：评分≥4.5 且评价数≥10
@@ -389,14 +404,20 @@ function renderDualRank(type) {
             const recentBad = getAllReviews().filter(r => r.dishId === d.id && r.rating <= 2 && (r.daysAgo || 0) <= 7);
             return recentBad.length > 0;
         }).sort((a, b) => a.rating - b.rating).slice(0, 5);
+        // 存疑区：评分<3.5 且评价数≥10 但近7天无差评
+        doubtfulList = filtered.filter(d => {
+            if (d.rating >= 3.5 || d.reviews < 10) return false;
+            const recentBad = getAllReviews().filter(r => r.dishId === d.id && r.rating <= 2 && (r.daysAgo || 0) <= 7);
+            return recentBad.length === 0;
+        }).sort((a, b) => a.rating - b.rating).slice(0, 5);
     }
 
-    if (list.length === 0) {
+    if (list.length === 0 && doubtfulList.length === 0) {
         container.innerHTML = `<div class="empty-state"><div class="empty-icon">${type === 'good' ? '🌟' : '🎉'}</div><p>${type === 'good' ? '该食堂暂无高分菜品' : '该食堂暂无踩雷菜品，恭喜！'}</p></div>`;
         return;
     }
 
-    container.innerHTML = list.map((d, i) => {
+    const mainHtml = list.length > 0 ? list.map((d, i) => {
         const rankClass = `${type}-top${i + 1}`;
         const worth = getWorthTag(d);
         let adviceHtml = '';
@@ -419,7 +440,48 @@ function renderDualRank(type) {
                 </div>
             </div>
         `;
-    }).join('');
+    }).join('') : '';
+
+    // 存疑区（仅差评榜有）
+    const doubtfulHtml = (type === 'bad' && doubtfulList.length > 0) ? `
+        <div class="doubtful-section">
+            <div class="doubtful-header" onclick="toggleDoubtful()">
+                <span>🔍 存疑菜品（历史评分偏低，近期暂无差评）</span>
+                <span class="doubtful-toggle" id="doubtful-toggle">▶</span>
+            </div>
+            <div id="doubtful-content" style="display:none">
+                <p class="doubtful-desc">这些菜品历史评分偏低，但近 7 天无差评，可能已改善，建议自行判断。</p>
+                ${doubtfulList.map(d => `
+                    <div class="rank-item" onclick="openDishDetail(${d.id})">
+                        <div class="rank-thumb" style="background:${d.imgColor}20">${d.emoji}</div>
+                        <div class="rank-info">
+                            <h4>${d.name}</h4>
+                            <p>${d.canteen} · <span class="price-tag">¥${d.price}</span></p>
+                            <span class="worth-tag maybe">🔍 存疑</span>
+                        </div>
+                        <div class="rank-score">
+                            <div class="score-num">${d.rating}</div>
+                            <div class="score-label">${d.reviews}评</div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    ` : '';
+
+    container.innerHTML = mainHtml + doubtfulHtml;
+}
+
+function toggleDoubtful() {
+    const content = document.getElementById('doubtful-content');
+    const toggle = document.getElementById('doubtful-toggle');
+    if (content.style.display === 'none') {
+        content.style.display = 'block';
+        toggle.textContent = '▼';
+    } else {
+        content.style.display = 'none';
+        toggle.textContent = '▶';
+    }
 }
 
 function setBuildingFilter(canteen) {
@@ -512,23 +574,25 @@ function searchByCategory(cat) {
 // ===== 避雷指南 =====
 function renderAvoidList() {
     const dishes = getMergedDishes().filter(d => d.rating < 3.5);
+    const filtered = currentBuildingFilter === 'all' ? dishes : dishes.filter(d => d.canteen === currentBuildingFilter);
     const container = document.getElementById('avoid-list');
-    if (dishes.length === 0) {
-        container.innerHTML = '<div class="empty-state"><div class="empty-icon">🎉</div><p>暂无踩雷菜品</p></div>';
+    if (filtered.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-icon">🎉</div><p>该食堂暂无踩雷菜品</p></div>';
         return;
     }
-    container.innerHTML = dishes.map(d => renderDishCard(d)).join('');
+    container.innerHTML = filtered.map(d => renderDishCard(d)).join('');
 }
 
 // ===== 新品上架 =====
 function renderNewDishes() {
     const dishes = getMergedDishes().filter(d => d.isNew);
+    const filtered = currentBuildingFilter === 'all' ? dishes : dishes.filter(d => d.canteen === currentBuildingFilter);
     const container = document.getElementById('new-dish-list');
-    if (dishes.length === 0) {
-        container.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><p>暂无新品</p></div>';
+    if (filtered.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><p>该食堂暂无新品</p></div>';
         return;
     }
-    container.innerHTML = dishes.map(d => renderDishCard(d)).join('');
+    container.innerHTML = filtered.map(d => renderDishCard(d)).join('');
 }
 
 // ===== 搜索 =====
@@ -569,6 +633,7 @@ function openDishDetail(id) {
     const allReviews = getAllReviews();
     const dishReviews = allReviews.filter(r => r.dishId === id);
     const worth = getWorthTag(dish);
+    const queueStatus = getQueueStatus(dish);
     const isFav = loadFavorites().includes(id);
 
     const reviewHTML = dishReviews.length > 0
@@ -576,7 +641,7 @@ function openDishDetail(id) {
             const isBad = r.rating <= 2;
             const displayName = isBad ? '匿名同学' : r.user;
             const displayAvatar = isBad ? '🎭' : r.avatar;
-            const displayTime = isBad ? '近期' : r.time;
+            const displayTime = r.time;
             const imagesHtml = r.images && r.images.length > 0
                 ? `<div class="review-images">${r.images.map(img => `<img src="${img}" alt="评价图">`).join('')}</div>`
                 : '';
@@ -614,6 +679,7 @@ function openDishDetail(id) {
             </div>
             <div class="detail-tags">
                 <span class="worth-tag ${worth.type}">${worth.icon} ${worth.label}</span>
+                ${queueStatus ? `<span class="worth-tag maybe">${queueStatus.text}</span>` : ''}
                 ${dish.tags.map(t => `<span class="detail-tag">${t}</span>`).join('')}
             </div>
             <div class="algo-transparent">${getAlgoTransparentText(dish)}</div>
@@ -629,6 +695,9 @@ function openDishDetail(id) {
             <div class="detail-actions">
                 <button class="detail-btn ${isFav ? 'btn-primary' : 'btn-outline'}" onclick="toggleFavorite(${dish.id})">${isFav ? '✓ 已加入' : '🍽️ 加入想吃清单'}</button>
                 <button class="detail-btn btn-primary" onclick="openReviewModal(${dish.id})">✍️ 写点评</button>
+            </div>
+            <div style="margin-top:10px">
+                <button class="detail-btn btn-outline" style="width:100%" onclick="openCheckIn(${dish.id})">✅ 我去吃了（打卡）</button>
             </div>
             <div class="detail-reviews">
                 <h4>💬 用户评价 (${dishReviews.length})</h4>
@@ -660,6 +729,17 @@ function toggleFavorite(dishId) {
     saveFavorites(favs);
     openDishDetail(dishId); // 刷新详情页按钮状态
     renderMineStats();
+}
+
+// ===== 打卡功能 =====
+function openCheckIn(dishId) {
+    const choice = confirm('你今天吃了什么？\n\n点击"确定"= 吃了这道菜\n点击"取消"= 选了同食堂其他菜');
+    const checkIns = JSON.parse(localStorage.getItem('zhishi_checkins') || '{}');
+    const today = new Date().toDateString();
+    if (!checkIns[today]) checkIns[today] = [];
+    checkIns[today].push({ dishId, ateThis: choice, time: Date.now() });
+    localStorage.setItem('zhishi_checkins', JSON.stringify(checkIns));
+    showToast(choice ? '打卡成功：吃了这道菜' : '打卡成功：选了其他菜');
 }
 
 // ===== 点评弹窗 =====
