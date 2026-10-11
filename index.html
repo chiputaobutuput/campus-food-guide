@@ -72,8 +72,15 @@
                     <h2>🏆 菜品榜单</h2>
                 </div>
                 <div class="dual-tab">
-                    <button class="dual-tab-btn active" data-tab="good" onclick="switchDualTab('good', this)">👍 好评榜</button>
+                    <button class="dual-tab-btn active good" data-tab="good" onclick="switchDualTab('good', this)">👍 好评榜</button>
                     <button class="dual-tab-btn" data-tab="bad" onclick="switchDualTab('bad', this)">⚠️ 避雷榜</button>
+                </div>
+                <div class="building-filter" id="building-filter">
+                    <span class="filter-chip active" data-canteen="all" onclick="setBuildingFilter('all')">全部</span>
+                    <span class="filter-chip" data-canteen="第一食堂" onclick="setBuildingFilter('第一食堂')">一食堂</span>
+                    <span class="filter-chip" data-canteen="第二食堂" onclick="setBuildingFilter('第二食堂')">二食堂</span>
+                    <span class="filter-chip" data-canteen="清真食堂" onclick="setBuildingFilter('清真食堂')">清真</span>
+                    <span class="filter-chip" data-canteen="风味小吃街" onclick="setBuildingFilter('风味小吃街')">风味</span>
                 </div>
                 <div class="rank-list" id="dual-rank-list"></div>
             </div>
@@ -136,7 +143,7 @@
                 <div class="avatar">😊</div>
                 <div class="profile-info">
                     <h3>知食探索者</h3>
-                    <p id="profile-stats">已点评 0 道 · 收藏 0 道</p>
+                    <p id="profile-stats">已点评 0 道 · 想吃清单 0 道</p>
                 </div>
             </div>
             <div class="mine-menu">
@@ -146,7 +153,7 @@
                     <span>›</span>
                 </div>
                 <div class="menu-item" onclick="navigateTo('favorites')">
-                    <span>⭐ 我的收藏</span>
+                    <span>🍽️ 想吃清单</span>
                     <span class="menu-count" id="my-fav-count">0</span>
                     <span>›</span>
                 </div>
@@ -176,12 +183,12 @@
             </div>
         </section>
 
-        <!-- 收藏页 -->
+        <!-- 想吃清单页 -->
         <section id="page-favorites" class="page" style="display:none">
             <div class="section" style="padding-top:12px">
                 <button class="back-btn-inline" onclick="navigateTo('mine')">← 返回</button>
                 <div class="section-header" style="margin-top:12px">
-                    <h2>⭐ 我的收藏</h2>
+                    <h2>🍽️ 想吃清单</h2>
                 </div>
                 <div id="favorites-list" class="dish-list"></div>
             </div>
