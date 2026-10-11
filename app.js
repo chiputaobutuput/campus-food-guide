@@ -215,6 +215,8 @@ function init() {
 
 // ===== 导航 =====
 function navigateTo(page) {
+    // 兼容：原 discover 页已合并入首页
+    if (page === 'discover') page = 'home';
     document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
     const target = document.getElementById('page-' + page);
     if (target) {
@@ -235,7 +237,9 @@ function navigateTo(page) {
     if (page === 'mine') renderMineStats();
     if (page === 'myreviews') renderMyReviews();
     if (page === 'favorites') renderFavorites();
-    if (page === 'rank' || page === 'discover') {
+    if (page === 'home') {
+        // 首页合并了原发现页内容，刷新各模块
+        renderCategoryGrid();
         const activeTab = document.querySelector('.rank-tab.active');
         if (activeTab) {
             const type = activeTab.getAttribute('onclick').match(/'(\w+)'/)[1];
@@ -243,6 +247,9 @@ function navigateTo(page) {
         }
         renderAvoidList();
         renderNewDishes();
+    }
+    if (page === 'review') {
+        renderReviewCanteenGrid();
     }
 }
 
@@ -309,10 +316,58 @@ function renderCanteens() {
     }).join('');
 }
 
+// ===== 发评价流程 =====
+function renderReviewCanteenGrid() {
+    // 重置到步骤1
+    document.getElementById('review-step-canteen').style.display = 'block';
+    document.getElementById('review-step-dish').style.display = 'none';
+    const container = document.getElementById('review-canteen-grid');
+    const dishes = getMergedDishes();
+    container.innerHTML = CANTEENS.map(c => {
+        const dishCount = dishes.filter(d => d.canteen === c.name).length;
+        return `
+            <div class="canteen-card" onclick="selectReviewCanteen('${c.name}')">
+                <div class="canteen-icon">${c.icon}</div>
+                <div class="canteen-info">
+                    <h3>${c.name}</h3>
+                    <p>⭐ ${c.rating} · ${dishCount}道菜</p>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function selectReviewCanteen(canteenName) {
+    document.getElementById('review-step-canteen').style.display = 'none';
+    document.getElementById('review-step-dish').style.display = 'block';
+    document.getElementById('review-dish-title').textContent = `${canteenName} · 选择你吃过的菜品`;
+    const dishes = getMergedDishes().filter(d => d.canteen === canteenName);
+    const container = document.getElementById('review-dish-list');
+    if (dishes.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-icon">🍽️</div><p>该食堂暂无菜品数据</p></div>';
+        return;
+    }
+    container.innerHTML = dishes.map(d => `
+        <div class="dish-card" onclick="openReviewModal(${d.id})">
+            <div class="dish-thumb" style="background:${d.imgColor}20">${d.emoji}</div>
+            <div class="dish-info">
+                <h4>${d.name}</h4>
+                <p>${d.window} · <span class="price-tag">¥${d.price}</span></p>
+                <div class="dish-rating">★ ${d.rating} <span class="review-count">${d.reviews}评</span></div>
+            </div>
+            <div class="dish-action">点评 ›</div>
+        </div>
+    `).join('');
+}
+
+function reviewBackToCanteen() {
+    document.getElementById('review-step-dish').style.display = 'none';
+    document.getElementById('review-step-canteen').style.display = 'block';
+}
+
 // 食堂详情页
 function openCanteenDetail(canteenId) {
     const canteen = CANTEENS.find(c => c.id === canteenId);
-    if (!canteen) return;
     const dishes = getMergedDishes().filter(d => d.canteen === canteen.name);
 
     document.getElementById('canteen-detail-content').innerHTML = `
