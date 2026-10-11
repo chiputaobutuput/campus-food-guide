@@ -36,7 +36,7 @@ body {
 
 #app {
     min-height: 100vh;
-    padding-bottom: 70px;
+    padding-bottom: 80px;
 }
 
 /* ===== 顶部导航栏 ===== */
@@ -654,6 +654,53 @@ body {
 .nav-label {
     font-size: 11px;
     font-weight: 500;
+}
+
+/* 中间突出的发评价按钮 */
+.nav-item-center {
+    position: relative;
+    padding: 4px 16px;
+}
+
+.nav-center-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #FF6B35, #E55100);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: -24px;
+    box-shadow: 0 4px 14px rgba(255, 107, 53, 0.4);
+    border: 3px solid white;
+    transition: transform 0.2s;
+}
+
+.nav-item-center:active .nav-center-btn {
+    transform: scale(0.92);
+}
+
+.nav-center-icon {
+    font-size: 22px;
+}
+
+.nav-item-center .nav-label {
+    color: var(--primary);
+    font-weight: 600;
+    margin-top: 2px;
+}
+
+.nav-item-center.active .nav-center-btn {
+    box-shadow: 0 4px 18px rgba(255, 107, 53, 0.55);
+    transform: scale(1.05);
+}
+
+/* 菜品卡右侧"点评"操作 */
+.dish-action {
+    color: var(--primary);
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
 }
 
 /* ===== 弹窗 ===== */
