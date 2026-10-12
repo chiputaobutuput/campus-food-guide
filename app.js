@@ -87,7 +87,8 @@ const STORAGE_KEYS = {
     FAVORITES: 'zhishi_favorites',
     REVIEW_COUNT_TODAY: 'zhishi_review_count_today',
     REVIEW_COUNT_DATE: 'zhishi_review_count_date',
-    LIKES: 'zhishi_likes'
+    LIKES: 'zhishi_likes',
+    PROFILE: 'zhishi_profile'
 };
 
 function loadUserReviews() {
@@ -139,6 +140,30 @@ function loadLikedReviews() {
 
 function saveLikedReviews(ids) {
     localStorage.setItem(STORAGE_KEYS.LIKES, JSON.stringify(ids));
+}
+
+// ===== 用户资料 =====
+const DEFAULT_PROFILE = { avatar: '😊', name: '知食探索者' };
+const AVATAR_EMOJIS = ['😊','😄','😍','🤩','😎','🥳','🤓','😋','😺','🐱','🐶','🐼','🦊','🐯','🐻','🐨','🐰','🐸','🐵','🦁','🐮','🐷','🐙','🦄','🍔','🍕','🍜','🍣','🍩','🍪','🎮','⚽','🎵','⭐','🌈','🔥'];
+
+function loadProfile() {
+    try {
+        const p = JSON.parse(localStorage.getItem(STORAGE_KEYS.PROFILE) || 'null');
+        if (p && p.avatar && p.name) return p;
+    } catch {}
+    return { ...DEFAULT_PROFILE };
+}
+
+function saveProfile(profile) {
+    localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(profile));
+}
+
+function applyProfileToCard() {
+    const p = loadProfile();
+    const avatarEl = document.getElementById('profile-avatar');
+    const nameEl = document.getElementById('profile-name');
+    if (avatarEl) avatarEl.textContent = p.avatar;
+    if (nameEl) nameEl.textContent = p.name;
 }
 
 function getReviewLikeCount(review) {
@@ -1199,11 +1224,12 @@ function submitReview() {
     const dishReviews = allReviews.filter(r => r.dishId === currentReviewDishId);
     const isFirst = dishReviews.length === 0;
 
+    const profile = loadProfile();
     const newReview = {
         id: Date.now(),
         dishId: currentReviewDishId,
-        user: '我',
-        avatar: '😊',
+        user: profile.name,
+        avatar: profile.avatar,
         rating: selectedRating,
         text: text,
         time: '刚刚',
@@ -1244,11 +1270,48 @@ function submitReview() {
 
 // ===== 我的页面 =====
 function renderMineStats() {
+    applyProfileToCard();
     const userReviews = loadUserReviews();
     const favs = loadFavorites();
     document.getElementById('profile-stats').textContent = `已点评 ${userReviews.length} 道 · 想吃清单 ${favs.length} 道`;
     document.getElementById('my-review-count').textContent = userReviews.length;
     document.getElementById('my-fav-count').textContent = favs.length;
+}
+
+// ===== 编辑资料弹窗 =====
+let pendingAvatar = '😊';
+
+function openProfileModal() {
+    const p = loadProfile();
+    pendingAvatar = p.avatar;
+    document.getElementById('avatar-current').textContent = p.avatar;
+    document.getElementById('nickname-input').value = p.name;
+    const grid = document.getElementById('emoji-grid');
+    grid.innerHTML = AVATAR_EMOJIS.map(e =>
+        `<div class="emoji-option ${e === p.avatar ? 'selected' : ''}" data-avatar="${e}" onclick="selectAvatar('${e}')">${e}</div>`
+    ).join('');
+    document.getElementById('profile-modal').style.display = 'flex';
+}
+
+function closeProfileModal() {
+    document.getElementById('profile-modal').style.display = 'none';
+}
+
+function selectAvatar(emoji) {
+    pendingAvatar = emoji;
+    document.getElementById('avatar-current').textContent = emoji;
+    document.querySelectorAll('#emoji-grid .emoji-option').forEach(el => {
+        el.classList.toggle('selected', el.dataset.avatar === emoji);
+    });
+}
+
+function saveProfileEdit() {
+    const name = document.getElementById('nickname-input').value.trim() || DEFAULT_PROFILE.name;
+    const profile = { avatar: pendingAvatar, name: name.slice(0, 12) };
+    saveProfile(profile);
+    applyProfileToCard();
+    closeProfileModal();
+    showToast('资料已更新');
 }
 
 function renderMyReviews() {
