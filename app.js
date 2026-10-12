@@ -1015,9 +1015,19 @@ function switchRankTab(type, el) {
 
 // ===== 最新评价 =====
 function renderLatestReviews() {
-    const allReviews = getAllReviews().sort((a, b) => b.id - a.id).slice(0, 3);
-    const container = document.getElementById('latest-reviews');
     const currentSchool = loadCurrentSchool();
+    // 仅展示当前学校菜品的评价（不同学校数据隔离）
+    const allReviews = getAllReviews()
+        .filter(r => {
+            const dish = getDishByIdGlobal(r.dishId);
+            return dish && dish.school === currentSchool;
+        })
+        .sort((a, b) => b.id - a.id);
+    const container = document.getElementById('latest-reviews');
+    if (allReviews.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-icon">💬</div><p>该校还没有点评</p><p class="empty-hint">去发第一条评价吧</p></div>';
+        return;
+    }
     container.innerHTML = allReviews.map(r => {
         const dish = getDishByIdGlobal(r.dishId);
         const isBad = r.rating <= 2;
@@ -1042,7 +1052,7 @@ function renderLatestReviews() {
                 </div>
                 <div class="review-stars">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</div>
                 <p class="review-text">${r.text}</p>
-                <span class="review-dish">${dish ? (dish.school && dish.school !== currentSchool ? `${dish.emoji} ${dish.name} <span style="color:#999;font-size:12px">(${dish.school})</span>` : `${dish.emoji} ${dish.name}`) : '已下架'}</span>
+                <span class="review-dish">${dish ? `${dish.emoji} ${dish.name}` : '已下架'}</span>
                 <div class="review-footer">
                     <span></span>
                     ${likeBtn}
