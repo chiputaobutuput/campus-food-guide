@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>知食分子 - 校园食堂点评推荐</title>
-    <link rel="stylesheet" href="style.css?v=2">
+    <link rel="stylesheet" href="style.css?v=3">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
 </head>
@@ -17,9 +17,6 @@
                     <span class="logo-icon">🍚</span>
                     <span class="logo-text">知食分子</span>
                 </div>
-                <div class="header-actions">
-                    <button class="search-btn" onclick="navigateTo('search')">🔍</button>
-                </div>
             </div>
         </header>
 
@@ -27,7 +24,7 @@
         <section id="page-search" class="page" style="display:none">
             <div class="search-bar-wrap">
                 <input type="text" id="search-input" placeholder="搜索菜品、窗口..." oninput="handleSearch(this.value)">
-                <button class="back-btn" onclick="navigateTo('home')">取消</button>
+                <button class="back-btn" onclick="cancelSearch()">取消</button>
             </div>
             <div class="search-suggestions">
                 <h3>热门搜索</h3>
@@ -142,6 +139,9 @@
                     <span style="font-size:12px;color:#999">记录你刚吃的菜</span>
                 </div>
                 <div class="review-form-body">
+                    <label class="form-label">菜品图标 <span style="color:#999;font-weight:400;font-size:12px">（选一个代表这道菜）</span></label>
+                    <div class="emoji-picker" id="review-emoji-picker"></div>
+
                     <label class="form-label">菜品名称 <span style="color:#FF5252">*</span></label>
                     <input type="text" class="form-input" id="review-dish-name" placeholder="例如：黄焖鸡米饭" maxlength="20">
 
@@ -267,7 +267,7 @@
         <!-- Toast提示 -->
         <div id="toast" class="toast" style="display:none"></div>
 
-        <!-- 底部导航（5个Tab） -->
+        <!-- 底部导航（5个Tab + 中间搜索） -->
         <nav class="bottom-nav">
             <div class="nav-item active" data-page="home" onclick="navigateTo('home')">
                 <span class="nav-icon">🏠</span>
@@ -277,11 +277,15 @@
                 <span class="nav-icon">🧭</span>
                 <span class="nav-label">发现</span>
             </div>
-            <div class="nav-item nav-item-center" data-page="review" onclick="navigateTo('review')">
-                <div class="nav-center-btn">
-                    <span class="nav-center-icon">✍️</span>
-                </div>
+            <div class="nav-item" data-page="review" onclick="navigateTo('review')">
+                <span class="nav-icon">✍️</span>
                 <span class="nav-label">发评价</span>
+            </div>
+            <div class="nav-item nav-item-center" data-page="search" onclick="navigateTo('search')">
+                <div class="nav-center-btn">
+                    <span class="nav-center-icon">🔍</span>
+                </div>
+                <span class="nav-label">搜索</span>
             </div>
             <div class="nav-item" data-page="avoid" onclick="navigateTo('avoid')">
                 <span class="nav-icon">🕐</span>
@@ -294,6 +298,6 @@
         </nav>
     </div>
 
-    <script src="app.js?v=4"></script>
+    <script src="app.js?v=5"></script>
 </body>
 </html>
