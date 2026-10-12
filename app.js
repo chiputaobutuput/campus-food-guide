@@ -351,6 +351,11 @@ function navigateTo(page) {
         item.classList.toggle('active', item.dataset.page === page);
     });
 
+    const searchBtn = document.querySelector('.search-btn');
+    if (searchBtn) {
+        searchBtn.style.display = page === 'search' ? 'none' : 'flex';
+    }
+
     // 进入搜索页时清空输入框与结果
     if (page === 'search') {
         const input = document.getElementById('search-input');
