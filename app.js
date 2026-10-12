@@ -398,7 +398,8 @@ function init() {
     renderBanner();
     renderBuildingFilter();
     renderCanteens();
-    renderDualRank('good');
+    // 走与点击"全部"标签完全一致的代码路径，避免首次渲染空白
+    setBuildingFilter('all');
     renderLatestReviews();
     renderCategoryGrid();
     renderNewDishes();
@@ -637,10 +638,12 @@ function selectSchool(name) {
     renderNewDishes();
     renderLatestReviews();
     renderReviewForm();
-    // 刷新"我的"页学校标签（立即生效，无需切页再回来）
-    renderMineStats();
     // 跳到首页
     navigateTo('home');
+    // 最后更新"我的"页学校标签，确保不被其他渲染覆盖
+    renderMineStats();
+    const schoolEl = document.getElementById('my-school-name');
+    if (schoolEl) schoolEl.textContent = name;
     showToast(`已切换到「${name}」`);
 }
 const DISH_EMOJIS = ['🍽️','🍲','🍛','🍜','🍝','🍱','🍚','🍗','🍖','🥩','🐟','🍤','🥟','🥞','🍳','🥗','🍔','🌮','🥣','🍙'];
