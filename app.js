@@ -83,6 +83,7 @@ const SENSITIVE_WORDS = ['傻逼', '草泥马', '去死', '垃圾人', '废物',
 const STORAGE_KEYS = {
     REVIEWS: 'zhishi_reviews',
     DISHES: 'zhishi_dishes',
+    USER_DISHES: 'zhishi_user_dishes',
     FAVORITES: 'zhishi_favorites',
     REVIEW_COUNT_TODAY: 'zhishi_review_count_today',
     REVIEW_COUNT_DATE: 'zhishi_review_count_date',
@@ -107,6 +108,16 @@ function loadDishOverrides() {
 
 function saveDishOverrides(overrides) {
     localStorage.setItem(STORAGE_KEYS.DISHES, JSON.stringify(overrides));
+}
+
+function loadUserDishes() {
+    try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEYS.USER_DISHES) || '[]');
+    } catch { return []; }
+}
+
+function saveUserDishes(dishes) {
+    localStorage.setItem(STORAGE_KEYS.USER_DISHES, JSON.stringify(dishes));
 }
 
 function loadFavorites() {
@@ -187,12 +198,20 @@ function compressImage(file, maxSizeKB = 300) {
 // 获取合并后的菜品数据（基础数据 + 用户评分覆盖）
 function getMergedDishes() {
     const overrides = loadDishOverrides();
-    return DISHES.map(d => {
+    const base = DISHES.map(d => {
         if (overrides[d.id]) {
             return { ...d, ...overrides[d.id] };
         }
         return d;
     });
+    // 合并用户自建菜品（用户发评价时新增的菜品）
+    const userDishes = loadUserDishes().map(d => {
+        if (overrides[d.id]) {
+            return { ...d, ...overrides[d.id] };
+        }
+        return d;
+    });
+    return [...base, ...userDishes];
 }
 
 function getAllReviews() {
@@ -342,7 +361,7 @@ function navigateTo(page) {
         renderLatestReviews();
     }
     if (page === 'review') {
-        renderReviewCanteenGrid();
+        renderReviewForm();
     }
 }
 
@@ -409,53 +428,63 @@ function renderCanteens() {
     }).join('');
 }
 
-// ===== 发评价流程 =====
-function renderReviewCanteenGrid() {
-    // 重置到步骤1
-    document.getElementById('review-step-canteen').style.display = 'block';
-    document.getElementById('review-step-dish').style.display = 'none';
-    const container = document.getElementById('review-canteen-grid');
-    const dishes = getMergedDishes();
-    container.innerHTML = CANTEENS.map(c => {
-        const dishCount = dishes.filter(d => d.canteen === c.name).length;
-        return `
-            <div class="canteen-card" onclick="selectReviewCanteen('${c.name}')">
-                <div class="canteen-icon">${c.icon}</div>
-                <div class="canteen-info">
-                    <h3>${c.name}</h3>
-                    <p>⭐ ${c.rating} · ${dishCount}道菜</p>
-                </div>
-            </div>
-        `;
-    }).join('');
-}
-
-function selectReviewCanteen(canteenName) {
-    document.getElementById('review-step-canteen').style.display = 'none';
-    document.getElementById('review-step-dish').style.display = 'block';
-    document.getElementById('review-dish-title').textContent = `${canteenName} · 选择你吃过的菜品`;
-    const dishes = getMergedDishes().filter(d => d.canteen === canteenName);
-    const container = document.getElementById('review-dish-list');
-    if (dishes.length === 0) {
-        container.innerHTML = '<div class="empty-state"><div class="empty-icon">🍽️</div><p>该食堂暂无菜品数据</p></div>';
-        return;
+// ===== 发评价流程（自由输入菜品） =====
+function renderReviewForm() {
+    // 填充食堂下拉选项
+    const select = document.getElementById('review-canteen-select');
+    if (select) {
+        select.innerHTML = '<option value="">请选择食堂</option>' +
+            CANTEENS.map(c => `<option value="${c.name}">${c.icon} ${c.name}</option>`).join('');
     }
-    container.innerHTML = dishes.map(d => `
-        <div class="dish-card" onclick="openReviewModal(${d.id})">
-            <div class="dish-thumb" style="background:${d.imgColor}20">${d.emoji}</div>
-            <div class="dish-info">
-                <h4>${d.name}</h4>
-                <p>${d.window} · <span class="price-tag">¥${d.price}</span></p>
-                <div class="dish-rating">★ ${d.rating} <span class="review-count">${d.reviews}评</span></div>
-            </div>
-            <div class="dish-action">点评 ›</div>
-        </div>
-    `).join('');
+    // 清空输入框
+    const nameInput = document.getElementById('review-dish-name');
+    const windowInput = document.getElementById('review-window');
+    const priceInput = document.getElementById('review-price');
+    if (nameInput) nameInput.value = '';
+    if (windowInput) windowInput.value = '';
+    if (priceInput) priceInput.value = '';
 }
 
-function reviewBackToCanteen() {
-    document.getElementById('review-step-dish').style.display = 'none';
-    document.getElementById('review-step-canteen').style.display = 'block';
+function startReviewFromForm() {
+    const name = document.getElementById('review-dish-name').value.trim();
+    const canteen = document.getElementById('review-canteen-select').value;
+    const window = document.getElementById('review-window').value.trim();
+    const priceVal = document.getElementById('review-price').value;
+
+    if (!name) { showToast('请输入菜品名称'); return; }
+    if (!canteen) { showToast('请选择食堂'); return; }
+    if (!window) { showToast('请输入窗口'); return; }
+
+    const price = priceVal ? parseInt(priceVal) : 0;
+
+    // 查找是否已存在同名同食堂同窗口的菜品
+    const dishes = getMergedDishes();
+    let dish = dishes.find(d => d.name === name && d.canteen === canteen && d.window === window);
+
+    if (!dish) {
+        // 创建新菜品
+        const newId = Date.now();
+        dish = {
+            id: newId,
+            name: name,
+            canteen: canteen,
+            window: window,
+            price: price,
+            rating: 0,
+            reviews: 0,
+            emoji: '🍽️',
+            category: '其他',
+            tags: [],
+            desc: '',
+            isNew: false,
+            imgColor: '#90A4AE'
+        };
+        const userDishes = loadUserDishes();
+        userDishes.push(dish);
+        saveUserDishes(userDishes);
+    }
+
+    openReviewModal(dish.id);
 }
 
 // 食堂详情页
@@ -1155,8 +1184,8 @@ function submitReview() {
 
     // 更新菜品评分（加权平均：旧总分+新评分 / 旧数量+1）
     const overrides = loadDishOverrides();
-    const dish = DISHES.find(d => d.id === currentReviewDishId);
-    const current = overrides[currentReviewDishId] || { rating: dish.rating, reviews: dish.reviews };
+    const dish = getMergedDishes().find(d => d.id === currentReviewDishId);
+    const current = overrides[currentReviewDishId] || { rating: dish ? dish.rating : 0, reviews: dish ? dish.reviews : 0 };
     const oldTotal = current.rating * current.reviews;
     const newReviews = current.reviews + 1;
     const newRating = Math.round((oldTotal + selectedRating) / newReviews * 10) / 10;
