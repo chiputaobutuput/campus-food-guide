@@ -285,6 +285,16 @@ function getMergedDishes() {
     return [...base, ...userDishes];
 }
 
+// 跨学校查找菜品（用于"我的点评"中显示其他学校的菜品归属）
+function getDishByIdGlobal(dishId) {
+    const overrides = loadDishOverrides();
+    const all = [...DISHES, ...loadUserDishes()];
+    const d = all.find(x => x.id === dishId);
+    if (!d) return null;
+    const ov = overrides[d.id];
+    return ov ? { ...d, ...ov } : d;
+}
+
 function getAllReviews() {
     return [...REVIEWS, ...loadUserReviews()];
 }
@@ -627,6 +637,8 @@ function selectSchool(name) {
     renderNewDishes();
     renderLatestReviews();
     renderReviewForm();
+    // 刷新"我的"页学校标签（立即生效，无需切页再回来）
+    renderMineStats();
     // 跳到首页
     navigateTo('home');
     showToast(`已切换到「${name}」`);
@@ -929,6 +941,8 @@ function toggleDoubtful() {
 function renderBuildingFilter() {
     const container = document.getElementById('building-filter');
     if (!container) return;
+    // 确保筛选状态与渲染的标签一致，避免刷新后"全部"不显示内容
+    currentBuildingFilter = 'all';
     const canteens = getCanteens();
     const chips = ['<span class="filter-chip active" data-canteen="all" onclick="setBuildingFilter(\'all\')">全部</span>']
         .concat(canteens.map(c =>
@@ -1000,9 +1014,9 @@ function switchRankTab(type, el) {
 function renderLatestReviews() {
     const allReviews = getAllReviews().sort((a, b) => b.id - a.id).slice(0, 3);
     const container = document.getElementById('latest-reviews');
-    const dishes = getMergedDishes();
+    const currentSchool = loadCurrentSchool();
     container.innerHTML = allReviews.map(r => {
-        const dish = dishes.find(d => d.id === r.dishId);
+        const dish = getDishByIdGlobal(r.dishId);
         const isBad = r.rating <= 2;
         const displayName = isBad ? '匿名同学' : r.user;
         const displayAvatar = isBad ? '🎭' : r.avatar;
@@ -1025,7 +1039,7 @@ function renderLatestReviews() {
                 </div>
                 <div class="review-stars">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</div>
                 <p class="review-text">${r.text}</p>
-                <span class="review-dish">${dish ? dish.emoji + ' ' + dish.name : '已下架'}</span>
+                <span class="review-dish">${dish ? (dish.school && dish.school !== currentSchool ? `${dish.emoji} ${dish.name} <span style="color:#999;font-size:12px">(${dish.school})</span>` : `${dish.emoji} ${dish.name}`) : '已下架'}</span>
                 <div class="review-footer">
                     <span></span>
                     ${likeBtn}
@@ -1522,7 +1536,6 @@ function saveProfileEdit() {
 
 function renderMyReviews() {
     const userReviews = loadUserReviews();
-    const dishes = getMergedDishes();
     const container = document.getElementById('my-reviews-list');
 
     if (userReviews.length === 0) {
@@ -1531,10 +1544,17 @@ function renderMyReviews() {
     }
 
     container.innerHTML = userReviews.map(r => {
-        const dish = dishes.find(d => d.id === r.dishId);
+        const dish = getDishByIdGlobal(r.dishId);
         const isBad = r.rating <= 2;
         const displayName = isBad ? '匿名同学' : r.user;
         const displayAvatar = isBad ? '🎭' : r.avatar;
+        // 菜品若属于其他学校，标注学校名而非"已下架"
+        const currentSchool = loadCurrentSchool();
+        const dishLabel = dish
+            ? (dish.school && dish.school !== currentSchool
+                ? `${dish.emoji} ${dish.name} <span style="color:#999;font-size:12px">(${dish.school})</span>`
+                : `${dish.emoji} ${dish.name}`)
+            : '已下架';
         return `
             <div class="review-card">
                 <div class="review-header">
@@ -1549,7 +1569,7 @@ function renderMyReviews() {
                 <p class="review-text">${r.text}</p>
                 ${r.images && r.images.length > 0 ? `<div class="review-images">${r.images.map(img => `<img src="${img}" alt="评价图">`).join('')}</div>` : ''}
                 ${r.tags && r.tags.length > 0 ? `<div style="margin-top:6px">${r.tags.map(t => `<span class="detail-tag" style="margin-right:4px">#${t}</span>`).join('')}</div>` : ''}
-                <span class="review-dish">${dish ? dish.emoji + ' ' + dish.name : '已下架'}</span>
+                <span class="review-dish">${dishLabel}</span>
             </div>
         `;
     }).join('');
