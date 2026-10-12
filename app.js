@@ -381,7 +381,8 @@ function navigateTo(page) {
 
     const searchBtn = document.querySelector('.search-btn');
     if (searchBtn) {
-        searchBtn.style.display = page === 'search' ? 'none' : 'flex';
+        // 用空字符串清除 inline display，恢复按钮默认 inline-block，避免 flex 导致圆形背景丢失
+        searchBtn.style.display = page === 'search' ? 'none' : '';
     }
 
     // 进入搜索页时清空输入框与结果
