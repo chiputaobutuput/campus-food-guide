@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>知食分子 - 校园食堂点评推荐</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=2">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
 </head>
@@ -139,18 +139,25 @@
             <div class="section" style="padding-top:12px">
                 <div class="section-header">
                     <h2>✍️ 发表点评</h2>
-                    <span style="font-size:12px;color:#999">选择你刚吃过的菜品</span>
+                    <span style="font-size:12px;color:#999">记录你刚吃的菜</span>
                 </div>
-                <!-- 步骤1：选食堂 -->
-                <div id="review-step-canteen">
-                    <h3 style="font-size:14px;color:#666;margin:12px 4px">第一步：选择食堂</h3>
-                    <div class="canteen-grid" id="review-canteen-grid"></div>
-                </div>
-                <!-- 步骤2：选菜品 -->
-                <div id="review-step-dish" style="display:none">
-                    <button class="back-btn-inline" onclick="reviewBackToCanteen()">← 换个食堂</button>
-                    <h3 style="font-size:14px;color:#666;margin:12px 4px" id="review-dish-title">选择菜品</h3>
-                    <div class="dish-list" id="review-dish-list"></div>
+                <div class="review-form-body">
+                    <label class="form-label">菜品名称 <span style="color:#FF5252">*</span></label>
+                    <input type="text" class="form-input" id="review-dish-name" placeholder="例如：黄焖鸡米饭" maxlength="20">
+
+                    <label class="form-label">食堂 <span style="color:#FF5252">*</span></label>
+                    <select class="form-input" id="review-canteen-select">
+                        <option value="">请选择食堂</option>
+                    </select>
+
+                    <label class="form-label">窗口 <span style="color:#FF5252">*</span></label>
+                    <input type="text" class="form-input" id="review-window" placeholder="例如：A-03 或 3号窗口" maxlength="15">
+
+                    <label class="form-label">价格 <span style="color:#999;font-weight:400;font-size:12px">（选填，元）</span></label>
+                    <input type="number" class="form-input" id="review-price" placeholder="例如：14" min="0" max="999" step="1">
+
+                    <button class="submit-btn" onclick="startReviewFromForm()">开始点评</button>
+                    <p style="font-size:11px;color:#BBB;text-align:center;margin-top:10px">如果这道菜还没人点评过，你将成为首评人 🏆</p>
                 </div>
             </div>
         </section>
@@ -267,7 +274,7 @@
                 <span class="nav-label">首页</span>
             </div>
             <div class="nav-item" data-page="discover" onclick="navigateTo('discover')">
-                <span class="nav-icon">🔍</span>
+                <span class="nav-icon">🧭</span>
                 <span class="nav-label">发现</span>
             </div>
             <div class="nav-item nav-item-center" data-page="review" onclick="navigateTo('review')">
@@ -287,6 +294,6 @@
         </nav>
     </div>
 
-    <script src="app.js?v=3"></script>
+    <script src="app.js?v=4"></script>
 </body>
 </html>
