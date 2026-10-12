@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>知食分子 - 校园食堂点评推荐</title>
-    <link rel="stylesheet" href="style.css?v=3">
+    <link rel="stylesheet" href="style.css?v=4">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
 </head>
@@ -167,12 +167,13 @@
 
         <!-- 我的页面 -->
         <section id="page-mine" class="page" style="display:none">
-            <div class="profile-card">
-                <div class="avatar">😊</div>
+            <div class="profile-card" onclick="openProfileModal()">
+                <div class="avatar" id="profile-avatar">😊</div>
                 <div class="profile-info">
-                    <h3>知食探索者</h3>
+                    <h3 id="profile-name">知食探索者</h3>
                     <p id="profile-stats">已点评 0 道 · 想吃清单 0 道</p>
                 </div>
+                <span class="profile-edit-hint">✏️ 编辑</span>
             </div>
             <div class="mine-menu">
                 <div class="menu-item" onclick="navigateTo('myreviews')">
@@ -270,6 +271,32 @@
         <!-- Toast提示 -->
         <div id="toast" class="toast" style="display:none"></div>
 
+        <!-- 编辑资料弹窗 -->
+        <div id="profile-modal" class="modal" style="display:none">
+            <div class="modal-overlay" onclick="closeProfileModal()"></div>
+            <div class="modal-content" style="max-width:380px">
+                <div class="modal-header">
+                    <h3>编辑资料</h3>
+                    <button class="close-btn" onclick="closeProfileModal()">✕</button>
+                </div>
+                <div class="detail-body" style="padding:16px 20px 20px">
+                    <div class="field-block">
+                        <label class="field-label">头像</label>
+                        <div class="avatar-current" id="avatar-current">😊</div>
+                        <div class="emoji-grid" id="emoji-grid"></div>
+                    </div>
+                    <div class="field-block" style="margin-top:20px">
+                        <label class="field-label">昵称</label>
+                        <input type="text" id="nickname-input" class="form-input" maxlength="12" placeholder="给自己起个名字" style="margin-bottom:0">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeProfileModal()">取消</button>
+                    <button class="btn btn-primary" onclick="saveProfileEdit()">保存</button>
+                </div>
+            </div>
+        </div>
+
         <!-- 底部导航（5个Tab） -->
         <nav class="bottom-nav">
             <div class="nav-item active" data-page="home" onclick="navigateTo('home')">
@@ -297,6 +324,6 @@
         </nav>
     </div>
 
-    <script src="app.js?v=6"></script>
+    <script src="app.js?v=7"></script>
 </body>
 </html>
