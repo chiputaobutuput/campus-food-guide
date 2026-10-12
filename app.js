@@ -369,7 +369,10 @@ function navigateTo(page) {
     const target = document.getElementById('page-' + page);
     if (target) {
         target.style.display = 'block';
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // 切回页面顶部（scrollIntoView 在切换 display 时不可靠）
+        window.scrollTo(0, 0);
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
     }
 
     document.querySelectorAll('.nav-item').forEach(item => {
