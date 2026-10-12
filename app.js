@@ -1,27 +1,38 @@
 // ===== 模拟数据 =====
+const SCHOOLS = [
+    { id: 1, name: '示例大学' },
+    { id: 2, name: '隔壁大学' },
+];
+
 const CANTEENS = [
-    { id: 1, name: '第一食堂', icon: '🏢', rating: 4.2, tags: ['种类丰富', '性价比高'], location: '东区一楼' },
-    { id: 2, name: '第二食堂', icon: '🏬', rating: 4.0, tags: ['环境好', '排队少'], location: '东区二楼' },
-    { id: 3, name: '清真食堂', icon: '🕌', rating: 4.5, tags: ['特色风味', '分量足'], location: '西区一楼' },
-    { id: 4, name: '风味小吃街', icon: '🍢', rating: 3.8, tags: ['种类多', '价格偏高'], location: '南门侧' },
+    { id: 1, name: '第一食堂', icon: '🏢', rating: 4.2, tags: ['种类丰富', '性价比高'], location: '东区一楼', school: '示例大学' },
+    { id: 2, name: '第二食堂', icon: '🏬', rating: 4.0, tags: ['环境好', '排队少'], location: '东区二楼', school: '示例大学' },
+    { id: 3, name: '清真食堂', icon: '🕌', rating: 4.5, tags: ['特色风味', '分量足'], location: '西区一楼', school: '示例大学' },
+    { id: 4, name: '风味小吃街', icon: '🍢', rating: 3.8, tags: ['种类多', '价格偏高'], location: '南门侧', school: '示例大学' },
+    { id: 5, name: '北区食堂', icon: '🏫', rating: 4.3, tags: ['新开', '环境好'], location: '北区一楼', school: '隔壁大学' },
+    { id: 6, name: '南苑餐厅', icon: '🍱', rating: 4.1, tags: ['品种多'], location: '南苑', school: '隔壁大学' },
 ];
 
 const DISHES = [
-    { id: 1, name: '麻辣香锅', canteen: '第一食堂', window: 'A-01', price: 16, rating: 4.8, reviews: 234, emoji: '🍲', category: '主食', tags: ['招牌', '人气爆棚'], desc: '麻辣鲜香，食材自选，辣度可调', isNew: false, imgColor: '#FF6B35' },
-    { id: 2, name: '黄焖鸡米饭', canteen: '第一食堂', window: 'A-03', price: 14, rating: 4.6, reviews: 189, emoji: '🍗', category: '盖饭', tags: ['经典', '下饭神器'], desc: '鸡肉嫩滑，汤汁浓郁，配米饭绝配', isNew: false, imgColor: '#FFA500' },
-    { id: 3, name: '螺蛳粉', canteen: '第二食堂', window: 'B-02', price: 13, rating: 4.3, reviews: 156, emoji: '🍜', category: '粉面', tags: ['爱恨分明', '重口味'], desc: '正宗柳州味，酸笋腐竹配齐', isNew: false, imgColor: '#8BC344' },
-    { id: 4, name: '牛肉煎饼果子', canteen: '风味小吃街', window: 'C-01', price: 8, rating: 4.7, reviews: 312, emoji: '🥞', category: '小吃', tags: ['早餐之王', '性价比之王'], desc: '外酥里嫩，牛肉鲜香，每日限量', isNew: false, imgColor: '#FFD700' },
-    { id: 5, name: '番茄鸡蛋盖饭', canteen: '第一食堂', window: 'A-05', price: 10, rating: 3.9, reviews: 98, emoji: '🍳', category: '盖饭', tags: ['清淡', '家常味'], desc: '酸甜可口，鸡蛋嫩滑', isNew: false, imgColor: '#FF7043' },
-    { id: 6, name: '酸菜鱼粉', canteen: '第二食堂', window: 'B-04', price: 15, rating: 4.5, reviews: 142, emoji: '🐟', category: '粉面', tags: ['鲜美', '开胃'], desc: '酸菜爽脆，鱼片滑嫩', isNew: false, imgColor: '#26A69A' },
-    { id: 7, name: '鸡公煲', canteen: '第一食堂', window: 'A-07', price: 18, rating: 4.4, reviews: 120, emoji: '🍲', category: '主食', tags: ['量大', '够味'], desc: '鸡肉紧实，土豆软糯，配菜丰富', isNew: false, imgColor: '#E53935' },
-    { id: 8, name: '寿司拼盘', canteen: '风味小吃街', window: 'C-03', price: 20, rating: 3.5, reviews: 45, emoji: '🍣', category: '小吃', tags: ['价格偏高', '量少'], desc: '种类多但分量偏少', isNew: false, imgColor: '#7E57C2' },
-    { id: 9, name: '羊肉泡馍', canteen: '清真食堂', window: 'D-01', price: 17, rating: 4.6, reviews: 178, emoji: '🥘', category: '主食', tags: ['特色', '暖胃'], desc: '汤浓味鲜，羊肉软烂无膻味', isNew: false, imgColor: '#FF8C00' },
-    { id: 10, name: '重庆小面', canteen: '第二食堂', window: 'B-06', price: 9, rating: 4.2, reviews: 203, emoji: '🍝', category: '粉面', tags: ['便宜', '麻辣'], desc: '麻辣鲜香，面条筋道', isNew: false, imgColor: '#D32F2F' },
-    { id: 11, name: '芝士焗饭', canteen: '第二食堂', window: 'B-08', price: 16, rating: 2.8, reviews: 34, emoji: '🍚', category: '盖饭', tags: ['踩雷', '芝士少'], desc: '芝士量少且口感一般', isNew: false, imgColor: '#FFCA28' },
-    { id: 12, name: '新疆大盘鸡', canteen: '清真食堂', window: 'D-03', price: 22, rating: 4.7, reviews: 167, emoji: '🍗', category: '主食', tags: ['分量足', '够辣'], desc: '鸡肉入味，土豆绵软，皮带面配着吃', isNew: true, imgColor: '#C62828' },
-    { id: 13, name: '韩式拌饭', canteen: '风味小吃街', window: 'C-05', price: 14, rating: 4.1, reviews: 89, emoji: '🍱', category: '盖饭', tags: ['颜值高', '营养均衡'], desc: '蔬菜丰富，辣酱开胃', isNew: false, imgColor: '#FF5252' },
-    { id: 14, name: '潮汕砂锅粥', canteen: '第二食堂', window: 'B-10', price: 12, rating: 4.3, reviews: 67, emoji: '🥣', category: '小吃', tags: ['养胃', '鲜美'], desc: '米粒开花，鲜虾扇贝', isNew: true, imgColor: '#66BB6A' },
-    { id: 15, name: '老式锅包肉', canteen: '第一食堂', window: 'A-09', price: 15, rating: 3.2, reviews: 22, emoji: '🥩', category: '主食', tags: ['口味波动', '偏甜'], desc: '以前口碑不错，近期评价一般', isNew: false, imgColor: '#8D6E63' },
+    { id: 1, name: '麻辣香锅', canteen: '第一食堂', window: 'A-01', price: 16, rating: 4.8, reviews: 234, emoji: '🍲', category: '主食', tags: ['招牌', '人气爆棚'], desc: '麻辣鲜香，食材自选，辣度可调', isNew: false, imgColor: '#FF6B35', school: '示例大学' },
+    { id: 2, name: '黄焖鸡米饭', canteen: '第一食堂', window: 'A-03', price: 14, rating: 4.6, reviews: 189, emoji: '🍗', category: '盖饭', tags: ['经典', '下饭神器'], desc: '鸡肉嫩滑，汤汁浓郁，配米饭绝配', isNew: false, imgColor: '#FFA500', school: '示例大学' },
+    { id: 3, name: '螺蛳粉', canteen: '第二食堂', window: 'B-02', price: 13, rating: 4.3, reviews: 156, emoji: '🍜', category: '粉面', tags: ['爱恨分明', '重口味'], desc: '正宗柳州味，酸笋腐竹配齐', isNew: false, imgColor: '#8BC344', school: '示例大学' },
+    { id: 4, name: '牛肉煎饼果子', canteen: '风味小吃街', window: 'C-01', price: 8, rating: 4.7, reviews: 312, emoji: '🥞', category: '小吃', tags: ['早餐之王', '性价比之王'], desc: '外酥里嫩，牛肉鲜香，每日限量', isNew: false, imgColor: '#FFD700', school: '示例大学' },
+    { id: 5, name: '番茄鸡蛋盖饭', canteen: '第一食堂', window: 'A-05', price: 10, rating: 3.9, reviews: 98, emoji: '🍳', category: '盖饭', tags: ['清淡', '家常味'], desc: '酸甜可口，鸡蛋嫩滑', isNew: false, imgColor: '#FF7043', school: '示例大学' },
+    { id: 6, name: '酸菜鱼粉', canteen: '第二食堂', window: 'B-04', price: 15, rating: 4.5, reviews: 142, emoji: '🐟', category: '粉面', tags: ['鲜美', '开胃'], desc: '酸菜爽脆，鱼片滑嫩', isNew: false, imgColor: '#26A69A', school: '示例大学' },
+    { id: 7, name: '鸡公煲', canteen: '第一食堂', window: 'A-07', price: 18, rating: 4.4, reviews: 120, emoji: '🍲', category: '主食', tags: ['量大', '够味'], desc: '鸡肉紧实，土豆软糯，配菜丰富', isNew: false, imgColor: '#E53935', school: '示例大学' },
+    { id: 8, name: '寿司拼盘', canteen: '风味小吃街', window: 'C-03', price: 20, rating: 3.5, reviews: 45, emoji: '🍣', category: '小吃', tags: ['价格偏高', '量少'], desc: '种类多但分量偏少', isNew: false, imgColor: '#7E57C2', school: '示例大学' },
+    { id: 9, name: '羊肉泡馍', canteen: '清真食堂', window: 'D-01', price: 17, rating: 4.6, reviews: 178, emoji: '🥘', category: '主食', tags: ['特色', '暖胃'], desc: '汤浓味鲜，羊肉软烂无膻味', isNew: false, imgColor: '#FF8C00', school: '示例大学' },
+    { id: 10, name: '重庆小面', canteen: '第二食堂', window: 'B-06', price: 9, rating: 4.2, reviews: 203, emoji: '🍝', category: '粉面', tags: ['便宜', '麻辣'], desc: '麻辣鲜香，面条筋道', isNew: false, imgColor: '#D32F2F', school: '示例大学' },
+    { id: 11, name: '芝士焗饭', canteen: '第二食堂', window: 'B-08', price: 16, rating: 2.8, reviews: 34, emoji: '🍚', category: '盖饭', tags: ['踩雷', '芝士少'], desc: '芝士量少且口感一般', isNew: false, imgColor: '#FFCA28', school: '示例大学' },
+    { id: 12, name: '新疆大盘鸡', canteen: '清真食堂', window: 'D-03', price: 22, rating: 4.7, reviews: 167, emoji: '🍗', category: '主食', tags: ['分量足', '够辣'], desc: '鸡肉入味，土豆绵软，皮带面配着吃', isNew: true, imgColor: '#C62828', school: '示例大学' },
+    { id: 13, name: '韩式拌饭', canteen: '风味小吃街', window: 'C-05', price: 14, rating: 4.1, reviews: 89, emoji: '🍱', category: '盖饭', tags: ['颜值高', '营养均衡'], desc: '蔬菜丰富，辣酱开胃', isNew: false, imgColor: '#FF5252', school: '示例大学' },
+    { id: 14, name: '潮汕砂锅粥', canteen: '第二食堂', window: 'B-10', price: 12, rating: 4.3, reviews: 67, emoji: '🥣', category: '小吃', tags: ['养胃', '鲜美'], desc: '米粒开花，鲜虾扇贝', isNew: true, imgColor: '#66BB6A', school: '示例大学' },
+    { id: 15, name: '老式锅包肉', canteen: '第一食堂', window: 'A-09', price: 15, rating: 3.2, reviews: 22, emoji: '🥩', category: '主食', tags: ['口味波动', '偏甜'], desc: '以前口碑不错，近期评价一般', isNew: false, imgColor: '#8D6E63', school: '示例大学' },
+    // 隔壁大学菜品
+    { id: 101, name: '牛肉面', canteen: '北区食堂', window: '1号窗口', price: 12, rating: 4.5, reviews: 88, emoji: '🍜', category: '粉面', tags: ['汤鲜', '量大'], desc: '牛肉软烂，汤底浓郁', isNew: false, imgColor: '#D32F2F', school: '隔壁大学' },
+    { id: 102, name: '石锅拌饭', canteen: '北区食堂', window: '2号窗口', price: 15, rating: 4.2, reviews: 56, emoji: '🍚', category: '盖饭', tags: ['锅巴香'], desc: '锅巴酥脆，辣酱开胃', isNew: false, imgColor: '#FF8C00', school: '隔壁大学' },
+    { id: 103, name: '铁板烧', canteen: '南苑餐厅', window: 'A区', price: 18, rating: 4.0, reviews: 41, emoji: '🍳', category: '主食', tags: ['现场制作'], desc: '现点现做，香气四溢', isNew: true, imgColor: '#FF7043', school: '隔壁大学' },
 ];
 
 const REVIEWS = [
@@ -88,7 +99,9 @@ const STORAGE_KEYS = {
     REVIEW_COUNT_TODAY: 'zhishi_review_count_today',
     REVIEW_COUNT_DATE: 'zhishi_review_count_date',
     LIKES: 'zhishi_likes',
-    PROFILE: 'zhishi_profile'
+    PROFILE: 'zhishi_profile',
+    CURRENT_SCHOOL: 'zhishi_current_school',
+    USER_CANTEENS: 'zhishi_user_canteens'
 };
 
 function loadUserReviews() {
@@ -140,6 +153,39 @@ function loadLikedReviews() {
 
 function saveLikedReviews(ids) {
     localStorage.setItem(STORAGE_KEYS.LIKES, JSON.stringify(ids));
+}
+
+// ===== 学校与食堂 =====
+const DEFAULT_SCHOOL = '示例大学';
+
+function loadCurrentSchool() {
+    try {
+        const s = localStorage.getItem(STORAGE_KEYS.CURRENT_SCHOOL);
+        if (s && SCHOOLS.some(sc => sc.name === s)) return s;
+    } catch {}
+    return DEFAULT_SCHOOL;
+}
+
+function saveCurrentSchool(name) {
+    localStorage.setItem(STORAGE_KEYS.CURRENT_SCHOOL, name);
+}
+
+function loadUserCanteens() {
+    try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEYS.USER_CANTEENS) || '[]');
+    } catch { return []; }
+}
+
+function saveUserCanteens(canteens) {
+    localStorage.setItem(STORAGE_KEYS.USER_CANTEENS, JSON.stringify(canteens));
+}
+
+// 获取当前学校的所有食堂（内置 + 用户自建）
+function getCanteens() {
+    const school = loadCurrentSchool();
+    const builtin = CANTEENS.filter(c => c.school === school);
+    const user = loadUserCanteens().filter(c => c.school === school);
+    return [...builtin, ...user];
 }
 
 // ===== 用户资料 =====
@@ -220,8 +266,9 @@ function compressImage(file, maxSizeKB = 300) {
     });
 }
 
-// 获取合并后的菜品数据（基础数据 + 用户评分覆盖）
+// 获取合并后的菜品数据（基础数据 + 用户评分覆盖，按当前学校过滤）
 function getMergedDishes() {
+    const school = loadCurrentSchool();
     const overrides = loadDishOverrides();
     const mergeOne = (d) => {
         const ov = overrides[d.id];
@@ -233,8 +280,8 @@ function getMergedDishes() {
         }
         return merged;
     };
-    const base = DISHES.map(mergeOne);
-    const userDishes = loadUserDishes().map(mergeOne);
+    const base = DISHES.filter(d => d.school === school).map(mergeOne);
+    const userDishes = loadUserDishes().filter(d => d.school === school).map(mergeOne);
     return [...base, ...userDishes];
 }
 
@@ -339,6 +386,7 @@ let pendingReviewPrice = 0;
 // ===== 初始化 =====
 function init() {
     renderBanner();
+    renderBuildingFilter();
     renderCanteens();
     renderDualRank('good');
     renderLatestReviews();
@@ -394,6 +442,11 @@ function navigateTo(page) {
     }
 
     // 页面进入时刷新特定内容
+    if (page === 'home') {
+        renderBuildingFilter();
+        renderCanteens();
+        renderDualRank(document.querySelector('.dual-tab-btn.active')?.dataset.tab || 'good');
+    }
     if (page === 'mine') renderMineStats();
     if (page === 'myreviews') renderMyReviews();
     if (page === 'favorites') renderFavorites();
@@ -466,8 +519,10 @@ function startBannerAutoPlay() {
 // ===== 食堂导航 =====
 function renderCanteens() {
     const container = document.getElementById('canteen-grid');
+    if (!container) return;
     const dishes = getMergedDishes();
-    container.innerHTML = CANTEENS.map(c => {
+    const canteens = getCanteens();
+    const cards = canteens.map(c => {
         const dishCount = dishes.filter(d => d.canteen === c.name).length;
         return `
             <div class="canteen-card" onclick="openCanteenDetail(${c.id})">
@@ -479,18 +534,114 @@ function renderCanteens() {
             </div>
         `;
     }).join('');
+    // 末尾追加"添加食堂"入口
+    cards += `
+        <div class="canteen-card canteen-add-card" onclick="openAddCanteenModal()">
+            <div class="canteen-icon" style="background:var(--primary-light)">➕</div>
+            <div class="canteen-info">
+                <h3 style="color:var(--primary)">添加食堂</h3>
+                <p>补充你学校的食堂</p>
+            </div>
+        </div>
+    `;
+    container.innerHTML = cards;
 }
 
-// ===== 发评价流程（自由输入菜品） =====
+// ===== 添加食堂 =====
+function openAddCanteenModal() {
+    selectedCanteenEmoji = '🏢';
+    const grid = document.getElementById('canteen-emoji-grid');
+    grid.innerHTML = CANTEEN_EMOJIS.map(e =>
+        `<div class="emoji-option ${e === selectedCanteenEmoji ? 'selected' : ''}" onclick="selectCanteenEmoji('${e}', this)">${e}</div>`
+    ).join('');
+    document.getElementById('canteen-name-input').value = '';
+    document.getElementById('canteen-location-input').value = '';
+    document.getElementById('add-canteen-modal').style.display = 'flex';
+}
+
+function closeAddCanteenModal() {
+    document.getElementById('add-canteen-modal').style.display = 'none';
+}
+
+function selectCanteenEmoji(emoji, el) {
+    selectedCanteenEmoji = emoji;
+    document.querySelectorAll('#canteen-emoji-grid .emoji-option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+}
+
+function saveAddCanteen() {
+    const name = document.getElementById('canteen-name-input').value.trim();
+    const location = document.getElementById('canteen-location-input').value.trim();
+    if (!name) { showToast('请输入食堂名称'); return; }
+    const school = loadCurrentSchool();
+    // 同学校下重名校验
+    const exists = getCanteens().some(c => c.name === name);
+    if (exists) { showToast('该校已有同名食堂'); return; }
+    const newCanteen = {
+        id: Date.now(),
+        name: name,
+        icon: selectedCanteenEmoji,
+        rating: 0,
+        tags: [],
+        location: location || '未填写',
+        school: school,
+        isUserAdded: true
+    };
+    const list = loadUserCanteens();
+    list.push(newCanteen);
+    saveUserCanteens(list);
+    closeAddCanteenModal();
+    showToast('食堂添加成功');
+    renderCanteens();
+    renderBuildingFilter();
+    renderReviewForm();
+}
+
+// ===== 选择学校 =====
+function openSchoolModal() {
+    const current = loadCurrentSchool();
+    const list = document.getElementById('school-list');
+    list.innerHTML = SCHOOLS.map(s => `
+        <div class="school-item ${s.name === current ? 'active' : ''}" onclick="selectSchool('${s.name}')">
+            <span>🏫 ${s.name}</span>
+            ${s.name === current ? '<span style="color:var(--primary)">✓</span>' : ''}
+        </div>
+    `).join('');
+    document.getElementById('school-modal').style.display = 'flex';
+}
+
+function closeSchoolModal() {
+    document.getElementById('school-modal').style.display = 'none';
+}
+
+function selectSchool(name) {
+    if (name === loadCurrentSchool()) { closeSchoolModal(); return; }
+    saveCurrentSchool(name);
+    closeSchoolModal();
+    // 重置食堂筛选
+    currentBuildingFilter = 'all';
+    // 刷新首页内容
+    renderBuildingFilter();
+    renderCanteens();
+    renderDualRank('good');
+    renderNewDishes();
+    renderLatestReviews();
+    renderReviewForm();
+    // 跳到首页
+    navigateTo('home');
+    showToast(`已切换到「${name}」`);
+}
 const DISH_EMOJIS = ['🍽️','🍲','🍛','🍜','🍝','🍱','🍚','🍗','🍖','🥩','🐟','🍤','🥟','🥞','🍳','🥗','🍔','🌮','🥣','🍙'];
+const CANTEEN_EMOJIS = ['🏢','🏬','🏫','🕌','🍢','🍱','🥘','🍜','🍔','🥗','🍱','🏪'];
 let selectedDishEmoji = '🍽️';
+let selectedCanteenEmoji = '🏢';
 
 function renderReviewForm() {
-    // 填充食堂下拉选项
+    // 填充食堂下拉选项（仅当前学校）
     const select = document.getElementById('review-canteen-select');
     if (select) {
         select.innerHTML = '<option value="">请选择食堂</option>' +
-            CANTEENS.map(c => `<option value="${c.name}">${c.icon} ${c.name}</option>`).join('');
+            getCanteens().map(c => `<option value="${c.name}">${c.icon} ${c.name}</option>`).join('');
     }
     // 渲染菜品图标选择器
     const emojiPicker = document.getElementById('review-emoji-picker');
@@ -553,7 +704,8 @@ function startReviewFromForm() {
             tags: [],
             desc: '',
             isNew: false,
-            imgColor: idx >= 0 ? colorPalette[idx] : '#90A4AE'
+            imgColor: idx >= 0 ? colorPalette[idx] : '#90A4AE',
+            school: loadCurrentSchool()
         };
         const userDishes = loadUserDishes();
         userDishes.push(dish);
@@ -568,7 +720,8 @@ function startReviewFromForm() {
 // 食堂详情页
 let currentCanteenTab = 'all';
 function openCanteenDetail(canteenId) {
-    const canteen = CANTEENS.find(c => c.id === canteenId);
+    const canteen = getCanteens().find(c => c.id === canteenId);
+    if (!canteen) return;
     const dishes = getMergedDishes().filter(d => d.canteen === canteen.name);
     currentCanteenTab = 'all';
 
@@ -772,8 +925,24 @@ function toggleDoubtful() {
     }
 }
 
+// 动态渲染食堂筛选标签（与食堂导航的名称/数量保持一致）
+function renderBuildingFilter() {
+    const container = document.getElementById('building-filter');
+    if (!container) return;
+    const canteens = getCanteens();
+    const chips = ['<span class="filter-chip active" data-canteen="all" onclick="setBuildingFilter(\'all\')">全部</span>']
+        .concat(canteens.map(c =>
+            `<span class="filter-chip" data-canteen="${c.name}" onclick="setBuildingFilter('${c.name}')">${c.name}</span>`
+        ));
+    container.innerHTML = chips.join('');
+}
+
 function setBuildingFilter(canteen) {
     currentBuildingFilter = canteen;
+    // 更新标签高亮
+    document.querySelectorAll('#building-filter .filter-chip').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.canteen === canteen);
+    });
     const activeTab = document.querySelector('.dual-tab-btn.active');
     renderDualRank(activeTab ? activeTab.dataset.tab : 'good');
     // 同步刷新受楼栋筛选影响的模块
@@ -1311,6 +1480,8 @@ function renderMineStats() {
     document.getElementById('profile-stats').textContent = `已点评 ${userReviews.length} 道 · 想吃清单 ${favs.length} 道`;
     document.getElementById('my-review-count').textContent = userReviews.length;
     document.getElementById('my-fav-count').textContent = favs.length;
+    const schoolEl = document.getElementById('my-school-name');
+    if (schoolEl) schoolEl.textContent = loadCurrentSchool();
 }
 
 // ===== 编辑资料弹窗 =====
