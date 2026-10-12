@@ -327,7 +327,19 @@ function init() {
 }
 
 // ===== 导航 =====
+let searchReturnPage = 'home';
 function navigateTo(page) {
+    // 进入搜索页前，记录来源页（用于"取消"返回）
+    if (page === 'search') {
+        const pages = document.querySelectorAll('.page');
+        for (const p of pages) {
+            if (p.style.display !== 'none' && p.id !== 'page-search') {
+                searchReturnPage = p.id.replace('page-', '');
+                break;
+            }
+        }
+    }
+
     document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
     const target = document.getElementById('page-' + page);
     if (target) {
@@ -339,9 +351,12 @@ function navigateTo(page) {
         item.classList.toggle('active', item.dataset.page === page);
     });
 
-    const searchBtn = document.querySelector('.search-btn');
-    if (searchBtn) {
-        searchBtn.style.display = page === 'search' ? 'none' : 'flex';
+    // 进入搜索页时清空输入框与结果
+    if (page === 'search') {
+        const input = document.getElementById('search-input');
+        if (input) input.value = '';
+        const results = document.getElementById('search-results');
+        if (results) results.innerHTML = '';
     }
 
     // 页面进入时刷新特定内容
@@ -363,6 +378,10 @@ function navigateTo(page) {
     if (page === 'review') {
         renderReviewForm();
     }
+}
+
+function cancelSearch() {
+    navigateTo(searchReturnPage);
 }
 
 // ===== Banner轮播 =====
@@ -429,12 +448,23 @@ function renderCanteens() {
 }
 
 // ===== 发评价流程（自由输入菜品） =====
+const DISH_EMOJIS = ['🍽️','🍲','🍛','🍜','🍝','🍱','🍚','🍗','🍖','🥩','🐟','🍤','🥟','🥞','🍳','🥗','🍔','🌮','🥣','🍙'];
+let selectedDishEmoji = '🍽️';
+
 function renderReviewForm() {
     // 填充食堂下拉选项
     const select = document.getElementById('review-canteen-select');
     if (select) {
         select.innerHTML = '<option value="">请选择食堂</option>' +
             CANTEENS.map(c => `<option value="${c.name}">${c.icon} ${c.name}</option>`).join('');
+    }
+    // 渲染菜品图标选择器
+    const emojiPicker = document.getElementById('review-emoji-picker');
+    if (emojiPicker) {
+        selectedDishEmoji = '🍽️';
+        emojiPicker.innerHTML = DISH_EMOJIS.map(e =>
+            `<span class="emoji-option ${e === selectedDishEmoji ? 'selected' : ''}" onclick="selectDishEmoji('${e}', this)">${e}</span>`
+        ).join('');
     }
     // 清空输入框
     const nameInput = document.getElementById('review-dish-name');
@@ -443,6 +473,12 @@ function renderReviewForm() {
     if (nameInput) nameInput.value = '';
     if (windowInput) windowInput.value = '';
     if (priceInput) priceInput.value = '';
+}
+
+function selectDishEmoji(emoji, el) {
+    selectedDishEmoji = emoji;
+    document.querySelectorAll('#review-emoji-picker .emoji-option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
 }
 
 function startReviewFromForm() {
@@ -464,6 +500,9 @@ function startReviewFromForm() {
     if (!dish) {
         // 创建新菜品
         const newId = Date.now();
+        // 根据图标索引分配一个配色
+        const colorPalette = ['#FF6B35','#FFA500','#8BC344','#FFD700','#FF7043','#26A69A','#E53935','#7E57C2','#FF8C00','#D32F2F','#FFCA28','#C62828','#FF5252','#66BB6A','#8D6E63','#42A5F5','#AB47BC','#26C6DA','#EC407A','#90A4AE'];
+        const idx = DISH_EMOJIS.indexOf(selectedDishEmoji);
         dish = {
             id: newId,
             name: name,
@@ -472,12 +511,12 @@ function startReviewFromForm() {
             price: price,
             rating: 0,
             reviews: 0,
-            emoji: '🍽️',
+            emoji: selectedDishEmoji,
             category: '其他',
             tags: [],
             desc: '',
             isNew: false,
-            imgColor: '#90A4AE'
+            imgColor: idx >= 0 ? colorPalette[idx] : '#90A4AE'
         };
         const userDishes = loadUserDishes();
         userDishes.push(dish);
@@ -1021,12 +1060,6 @@ function openReviewModal(dishId) {
     const dishes = getMergedDishes();
     const dish = dishes.find(d => d.id === dishId);
 
-    // 频率限制：每日5条
-    if (getTodayReviewCount() >= 5) {
-        showToast('今日评价已达上限（5条），明天再来吧');
-        return;
-    }
-
     document.getElementById('review-form').innerHTML = `
         <div class="review-form-body">
             <p style="font-size:14px;color:#666;margin-bottom:12px">为「${dish.emoji} ${dish.name}」打分</p>
@@ -1044,7 +1077,6 @@ function openReviewModal(dishId) {
                 <div class="image-preview-list" id="image-preview-list"></div>
             </div>
             <button class="submit-btn" onclick="submitReview()">发布点评</button>
-            <p style="font-size:11px;color:#BBB;text-align:center;margin-top:10px">今日已评价 ${getTodayReviewCount()}/5 条</p>
         </div>
     `;
     // 初始渲染空标签池（未打分时不展示）
@@ -1191,9 +1223,6 @@ function submitReview() {
     const newRating = Math.round((oldTotal + selectedRating) / newReviews * 10) / 10;
     overrides[currentReviewDishId] = { rating: newRating, reviews: newReviews };
     saveDishOverrides(overrides);
-
-    // 今日评价计数+1
-    incrementTodayReviewCount();
 
     closeReviewModal();
     showToast(isFirst ? '🏆 恭喜首评！评价发布成功' : '评价发布成功！');
