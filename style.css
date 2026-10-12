@@ -1657,6 +1657,41 @@ body {
     box-shadow: 0 2px 8px rgba(255,107,53,0.3);
 }
 
+/* 添加食堂卡片 */
+.canteen-add-card {
+    border: 2px dashed var(--primary-light);
+    background: #FFF9F5;
+}
+.canteen-add-card .canteen-icon {
+    background: var(--primary-light) !important;
+}
+
+/* 学校选择 */
+.school-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.school-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-radius: 12px;
+    background: #F7F7F7;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 15px;
+}
+.school-item:hover {
+    background: var(--primary-light);
+}
+.school-item.active {
+    background: var(--primary-light);
+    color: var(--primary);
+    font-weight: 600;
+}
+
 .modal-footer {
     display: flex;
     gap: 10px;
