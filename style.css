@@ -943,6 +943,24 @@ body {
     border-color: var(--primary);
 }
 
+.form-input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    font-size: 14px;
+    outline: none;
+    font-family: inherit;
+    transition: border-color 0.2s;
+    margin-bottom: 16px;
+    box-sizing: border-box;
+    background: #fff;
+}
+
+.form-input:focus {
+    border-color: var(--primary);
+}
+
 .tag-selector {
     display: flex;
     flex-wrap: wrap;
