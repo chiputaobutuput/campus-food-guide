@@ -17,6 +17,9 @@
                     <span class="logo-icon">🍚</span>
                     <span class="logo-text">知食分子</span>
                 </div>
+                <div class="header-actions">
+                    <button class="search-btn" onclick="navigateTo('search')">🔍</button>
+                </div>
             </div>
         </header>
 
@@ -267,7 +270,7 @@
         <!-- Toast提示 -->
         <div id="toast" class="toast" style="display:none"></div>
 
-        <!-- 底部导航（5个Tab + 中间搜索） -->
+        <!-- 底部导航（5个Tab） -->
         <nav class="bottom-nav">
             <div class="nav-item active" data-page="home" onclick="navigateTo('home')">
                 <span class="nav-icon">🏠</span>
@@ -277,15 +280,11 @@
                 <span class="nav-icon">🧭</span>
                 <span class="nav-label">发现</span>
             </div>
-            <div class="nav-item" data-page="review" onclick="navigateTo('review')">
-                <span class="nav-icon">✍️</span>
-                <span class="nav-label">发评价</span>
-            </div>
-            <div class="nav-item nav-item-center" data-page="search" onclick="navigateTo('search')">
+            <div class="nav-item nav-item-center" data-page="review" onclick="navigateTo('review')">
                 <div class="nav-center-btn">
-                    <span class="nav-center-icon">🔍</span>
+                    <span class="nav-center-icon">✍️</span>
                 </div>
-                <span class="nav-label">搜索</span>
+                <span class="nav-label">发评价</span>
             </div>
             <div class="nav-item" data-page="avoid" onclick="navigateTo('avoid')">
                 <span class="nav-icon">🕐</span>
@@ -298,6 +297,6 @@
         </nav>
     </div>
 
-    <script src="app.js?v=5"></script>
+    <script src="app.js?v=6"></script>
 </body>
 </html>
