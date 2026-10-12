@@ -533,7 +533,7 @@ function renderCanteens() {
     if (!container) return;
     const dishes = getMergedDishes();
     const canteens = getCanteens();
-    const cards = canteens.map(c => {
+    let cards = canteens.map(c => {
         const dishCount = dishes.filter(d => d.canteen === c.name).length;
         return `
             <div class="canteen-card" onclick="openCanteenDetail(${c.id})">
