@@ -223,19 +223,18 @@ function compressImage(file, maxSizeKB = 300) {
 // 获取合并后的菜品数据（基础数据 + 用户评分覆盖）
 function getMergedDishes() {
     const overrides = loadDishOverrides();
-    const base = DISHES.map(d => {
-        if (overrides[d.id]) {
-            return { ...d, ...overrides[d.id] };
+    const mergeOne = (d) => {
+        const ov = overrides[d.id];
+        if (!ov) return d;
+        const merged = { ...d, ...ov };
+        // 多人上报价格取均价；无上报则沿用原价
+        if (ov.priceCount > 0) {
+            merged.price = Math.round(ov.priceSum / ov.priceCount);
         }
-        return d;
-    });
-    // 合并用户自建菜品（用户发评价时新增的菜品）
-    const userDishes = loadUserDishes().map(d => {
-        if (overrides[d.id]) {
-            return { ...d, ...overrides[d.id] };
-        }
-        return d;
-    });
+        return merged;
+    };
+    const base = DISHES.map(mergeOne);
+    const userDishes = loadUserDishes().map(mergeOne);
     return [...base, ...userDishes];
 }
 
@@ -335,6 +334,7 @@ let selectedTags = [];
 let currentReviewDishId = null;
 let currentBuildingFilter = 'all';
 let reviewImages = [];
+let pendingReviewPrice = 0;
 
 // ===== 初始化 =====
 function init() {
@@ -530,7 +530,10 @@ function startReviewFromForm() {
     const dishes = getMergedDishes();
     let dish = dishes.find(d => d.name === name && d.canteen === canteen && d.window === window);
 
-    if (!dish) {
+    if (dish) {
+        // 已存在：图标沿用首评的，价格记录到本条评价用于后续平均
+        showToast('已存在同名菜品，将沿用现有图标');
+    } else {
         // 创建新菜品
         const newId = Date.now();
         // 根据图标索引分配一个配色
@@ -556,6 +559,8 @@ function startReviewFromForm() {
         saveUserDishes(userDishes);
     }
 
+    // 本条评价上报的价格（用于均价统计）
+    pendingReviewPrice = price;
     openReviewModal(dish.id);
 }
 
@@ -983,7 +988,7 @@ function openDishDetail(id) {
             <div class="detail-meta">
                 <span class="rating-big">★ ${dish.rating}</span>
                 <span style="color:#999">${dish.reviews}条评价</span>
-                <span class="price-big">¥${dish.price}<span class="price-report" onclick="event.stopPropagation(); reportPrice(${dish.id})">价格不准？</span></span>
+                <span class="price-big">¥${dish.price}${dish.priceCount > 0 ? `<span style="font-size:11px;color:#999;margin-left:4px">(${dish.priceCount}人上报)</span>` : ''}<span class="price-report" onclick="event.stopPropagation(); reportPrice(${dish.id})">价格不准？</span></span>
             </div>
             <div class="detail-tags">
                 <span class="worth-tag ${worth.type}">${worth.icon} ${worth.label}</span>
@@ -1061,9 +1066,12 @@ function reportPrice(dishId) {
     }
     const overrides = loadDishOverrides();
     const current = overrides[dishId] || {};
-    overrides[dishId] = { ...current, price: price };
+    // 多人上报取均价
+    const priceSum = (current.priceSum || 0) + price;
+    const priceCount = (current.priceCount || 0) + 1;
+    overrides[dishId] = { ...current, priceSum, priceCount };
     saveDishOverrides(overrides);
-    showToast('价格已上报，感谢反馈！');
+    showToast('价格已上报，将纳入均价统计');
     openDishDetail(dishId);
 }
 
@@ -1093,6 +1101,9 @@ function openReviewModal(dishId) {
     const dishes = getMergedDishes();
     const dish = dishes.find(d => d.id === dishId);
 
+    // 默认价格：优先用本地上报的价格，否则用菜品当前价格
+    const defaultPrice = pendingReviewPrice > 0 ? pendingReviewPrice : (dish.price || 0);
+
     document.getElementById('review-form').innerHTML = `
         <div class="review-form-body">
             <p style="font-size:14px;color:#666;margin-bottom:12px">为「${dish.emoji} ${dish.name}」打分</p>
@@ -1101,6 +1112,8 @@ function openReviewModal(dishId) {
             </div>
             <label class="form-label">选择标签 <span style="color:#999;font-weight:400;font-size:12px">（根据星级动态展示，选填，最多3个）</span></label>
             <div class="tag-selector" id="tag-selector"></div>
+            <label class="form-label">价格 <span style="color:#999;font-weight:400;font-size:12px">（选填，元，不同人上报会取均价）</span></label>
+            <input type="number" class="form-input" id="review-modal-price" placeholder="例如：14" min="0" max="999" step="1" value="${defaultPrice || ''}">
             <label class="form-label">评价内容 <span style="color:#999;font-weight:400;font-size:12px">（至少15字，≤200字）</span></label>
             <textarea class="form-textarea" id="review-text" placeholder="说说你的用餐体验，至少15个字..." maxlength="200"></textarea>
             <label class="form-label">上传图片 <span style="color:#999;font-weight:400;font-size:12px">（选填，限1张，自动压缩）</span></label>
@@ -1227,6 +1240,11 @@ function submitReview() {
     const dishReviews = allReviews.filter(r => r.dishId === currentReviewDishId);
     const isFirst = dishReviews.length === 0;
 
+    // 读取本条评价上报的价格（弹窗输入框优先，否则用表单上报的）
+    const modalPriceInput = document.getElementById('review-modal-price');
+    const modalPriceVal = modalPriceInput ? modalPriceInput.value : '';
+    const reportedPrice = modalPriceVal ? parseInt(modalPriceVal) : pendingReviewPrice;
+
     const profile = loadProfile();
     const newReview = {
         id: Date.now(),
@@ -1239,6 +1257,7 @@ function submitReview() {
         daysAgo: 0,
         tags: selectedTags,
         images: reviewImages,
+        price: reportedPrice > 0 ? reportedPrice : 0,
         likes: 0,
         isFirst: isFirst
     };
@@ -1255,8 +1274,20 @@ function submitReview() {
     const oldTotal = current.rating * current.reviews;
     const newReviews = current.reviews + 1;
     const newRating = Math.round((oldTotal + selectedRating) / newReviews * 10) / 10;
-    overrides[currentReviewDishId] = { rating: newRating, reviews: newReviews };
+
+    // 更新价格统计（多人上报取均价）
+    let priceSum = current.priceSum || 0;
+    let priceCount = current.priceCount || 0;
+    if (reportedPrice > 0) {
+        priceSum += reportedPrice;
+        priceCount += 1;
+    }
+
+    overrides[currentReviewDishId] = { rating: newRating, reviews: newReviews, priceSum, priceCount };
     saveDishOverrides(overrides);
+
+    // 重置待上报价格
+    pendingReviewPrice = 0;
 
     closeReviewModal();
     showToast(isFirst ? '🏆 恭喜首评！评价发布成功' : '评价发布成功！');
@@ -1356,8 +1387,22 @@ function renderMyReviews() {
 function deleteReview(reviewId) {
     if (!confirm('确定要删除这条评价吗？删除后不可恢复。')) return;
     let userReviews = loadUserReviews();
+    const deleted = userReviews.find(r => r.id === reviewId);
     userReviews = userReviews.filter(r => r.id !== reviewId);
     saveUserReviews(userReviews);
+
+    // 同步扣减被删评价的价格统计
+    if (deleted && deleted.price && deleted.price > 0) {
+        const overrides = loadDishOverrides();
+        const ov = overrides[deleted.dishId];
+        if (ov && ov.priceCount > 0) {
+            ov.priceSum = Math.max(0, (ov.priceSum || 0) - deleted.price);
+            ov.priceCount = Math.max(0, (ov.priceCount || 0) - 1);
+            overrides[deleted.dishId] = ov;
+            saveDishOverrides(overrides);
+        }
+    }
+
     renderMyReviews();
     renderMineStats();
     showToast('评价已删除');
